@@ -2,7 +2,7 @@
 
 ## Rust製のVSCode拡張機能ダウンローダー
 
-このRustプログラムは、`extensions.json`ファイルから`recommendations`配列を読み取り、対応するVisual Studio Code拡張機能のVSIXパッケージをダウンロードします。提供されたPythonスクリプトと同様の機能を持ちますが、Rustで実装されており、パフォーマンスと効率性が向上しています。
+このRustプログラムは、`extensions.json`ファイルから`recommendations`配列を読み取り、対応するVisual Studio Code拡張機能のVSIXパッケージをダウンロードします。
 
 ### 特徴
 
@@ -16,51 +16,16 @@
 
 - システムに**Rust**と**Cargo**がインストールされていること。[rustup.rs](https://rustup.rs/)からインストールできます。
 
-### 依存関係
-
-以下のRustクレートを使用します：
-
-- [`serde`](https://crates.io/crates/serde)
-- [`serde_json`](https://crates.io/crates/serde_json)
-- [`reqwest`](https://crates.io/crates/reqwest)
-- [`tokio`](https://crates.io/crates/tokio)
-- [`clap`](https://crates.io/crates/clap)
-
-`Cargo.toml`に以下を指定してください：
-
-```toml
-[dependencies]
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-reqwest = { version = "0.11", features = ["json", "cookies", "rustls-tls"] }
-tokio = { version = "1", features = ["full"] }
-clap = { version = "4.1", features = ["derive"] }
-```
-
 ### インストール
 
-1. **リポジトリをクローンするか、ソースコードをコピー**して新しいディレクトリに配置します。
-
-2. **新しいCargoプロジェクトを初期化**（まだの場合）：
-
-   ```sh
-   cargo init vscode-extension-downloader
-   ```
-
-3. **`Cargo.toml`の依存関係を**上記のものに置き換えます。
-
-4. **Rustのソースコードを** `src/main.rs`に配置します。
-
-5. **プロジェクトをビルド**：
-
-   ```sh
-   cargo build --release
-   ```
+```sh
+cargo install extHarvest
+```
 
 ### 使用方法
 
 ```sh
-./target/release/vscode-extension-downloader [OPTIONS]
+extHarvest [OPTIONS]
 ```
 
 #### オプション
@@ -75,7 +40,7 @@ clap = { version = "4.1", features = ["derive"] }
 #### 使用例
 
 ```sh
-./target/release/vscode-extension-downloader \
+extHarvest \
   --input extensions.json \
   --destination extensions \
   --no-cache \
@@ -99,8 +64,4 @@ clap = { version = "4.1", features = ["derive"] }
 ### 謝辞
 
 - [offvsix](https://github.com/exaluc/offvsix) に影響を受けました。
-
-### ライセンス
-
-このプロジェクトはMITライセンスの下で提供されています。
 

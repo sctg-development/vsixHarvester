@@ -2,7 +2,7 @@
 
 ## VSCode Extension Downloader in Rust
 
-This Rust program reads the `recommendations` array from an `extensions.json` file and downloads the corresponding VSIX packages for Visual Studio Code extensions. It mimics the functionality of the provided Python script but is implemented in Rust for performance and efficiency.
+This Rust program reads the `recommendations` array from an `extensions.json` file and downloads the corresponding VSIX packages for Visual Studio Code extensions.
 
 ### Features
 
@@ -16,51 +16,16 @@ This Rust program reads the `recommendations` array from an `extensions.json` fi
 
 - **Rust** and **Cargo** installed on your system. You can install them from [rustup.rs](https://rustup.rs/).
 
-### Dependencies
-
-The program uses the following Rust crates:
-
-- [`serde`](https://crates.io/crates/serde)
-- [`serde_json`](https://crates.io/crates/serde_json)
-- [`reqwest`](https://crates.io/crates/reqwest)
-- [`tokio`](https://crates.io/crates/tokio)
-- [`clap`](https://crates.io/crates/clap)
-
-Ensure these are specified in your `Cargo.toml`:
-
-```toml
-[dependencies]
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-reqwest = { version = "0.11", features = ["json", "cookies", "rustls-tls"] }
-tokio = { version = "1", features = ["full"] }
-clap = { version = "4.1", features = ["derive"] }
-```
-
 ### Installation
 
-1. **Clone the repository or copy the source code** into a new directory.
-
-2. **Initialize a new Cargo project** if you haven't already:
-
-   ```sh
-   cargo init vscode-extension-downloader
-   ```
-
-3. **Replace the `Cargo.toml` dependencies** with the ones provided above.
-
-4. **Place the Rust source code** into `src/main.rs`.
-
-5. **Build the project**:
-
-   ```sh
-   cargo build --release
-   ```
+```sh
+cargo install extHarvester
+```
 
 ### Usage
 
 ```sh
-./target/release/vscode-extension-downloader [OPTIONS]
+extHarvester [OPTIONS]
 ```
 
 #### Options
@@ -75,7 +40,7 @@ clap = { version = "4.1", features = ["derive"] }
 #### Example
 
 ```sh
-./target/release/vscode-extension-downloader \
+extHarvester \
   --input extensions.json \
   --destination extensions \
   --no-cache \
@@ -100,6 +65,3 @@ The `extensions.json` file should have the following structure:
 
 - Inspired from [offvsix](https://github.com/exaluc/offvsix)
 
-### License
-
-This project is licensed under the MIT License.
