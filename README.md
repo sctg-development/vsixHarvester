@@ -96,6 +96,10 @@ The `extensions.json` file should have the following structure:
 }
 ```
 
+### Thanks
+
+- Inspired from [offvsix](https://github.com/exaluc/offvsix)
+
 ### License
 
 This project is licensed under the MIT License.

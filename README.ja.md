@@ -96,6 +96,10 @@ clap = { version = "4.1", features = ["derive"] }
 }
 ```
 
+### 謝辞
+
+- [offvsix](https://github.com/exaluc/offvsix) に影響を受けました。
+
 ### ライセンス
 
 このプロジェクトはMITライセンスの下で提供されています。
