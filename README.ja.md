@@ -1,4 +1,4 @@
-# README.ja.md
+# vsixHarvester
 
 ## Rust製のVSCode拡張機能ダウンローダー
 

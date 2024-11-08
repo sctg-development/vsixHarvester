@@ -1,4 +1,4 @@
-# README.md
+# vsixHarvester
 
 ## VSCode Extension Downloader in Rust
 
@@ -19,13 +19,13 @@ This Rust program reads the `recommendations` array from an `extensions.json` fi
 ### Installation
 
 ```sh
-cargo install extHarvester
+cargo install vsixHarvester
 ```
 
 ### Usage
 
 ```sh
-extHarvester [OPTIONS]
+vsixHarvester [OPTIONS]
 ```
 
 #### Options
@@ -40,7 +40,7 @@ extHarvester [OPTIONS]
 #### Example
 
 ```sh
-extHarvester \
+vsixHarvester \
   --input extensions.json \
   --destination extensions \
   --no-cache \
