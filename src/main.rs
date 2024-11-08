@@ -7,23 +7,23 @@ use tokio;
 
 #[derive(Parser)]
 struct Args {
-    /// extensions.jsonファイルへのパス
+    /// Path to extensions.json
     #[arg(short, long, default_value = "extensions.json")]
     input: String,
 
-    /// 出力先フォルダ
+    /// Output directory
     #[arg(short, long, default_value = "extensions")]
     destination: String,
 
-    /// 既に存在する場合でも再ダウンロードする
+    /// Force redownload if exists
     #[arg(long)]
     no_cache: bool,
 
-    /// プロキシURL
+    /// Specify proxy url
     #[arg(long)]
     proxy: Option<String>,
 
-    /// 詳細な出力を表示
+    /// Show verbose infomation
     #[arg(short, long)]
     verbose: bool,
 }
@@ -37,14 +37,14 @@ struct Extensions {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
-    // extensions.jsonファイルを読み込む
+    // Read extensions.json
     let file_content = fs::read_to_string(&args.input)?;
     let extensions: Extensions = serde_json::from_str(&file_content)?;
 
-    // 出力先ディレクトリを作成
+    // Create output directory
     fs::create_dir_all(&args.destination)?;
 
-    // 各拡張機能をダウンロード
+    // Download each extensions
     for extension in extensions.recommendations {
         if let Err(e) = download_extension(
             &extension,
@@ -55,7 +55,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .await
         {
-            eprintln!("{}のダウンロード中にエラーが発生しました: {}", extension, e);
+            eprintln!("Error has occored when downloading {}: {}", extension, e);
         }
     }
 
@@ -70,24 +70,24 @@ async fn download_extension(
     verbose: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if verbose {
-        println!("拡張機能を処理中: {}", extension);
+        println!("Progress in extension: {}", extension);
     }
 
     let parts: Vec<&str> = extension.split('.').collect();
     if parts.len() != 2 {
-        eprintln!("無効な拡張機能識別子: {}", extension);
+        eprintln!("Invalid extension identifier: {}", extension);
         return Ok(());
     }
     let publisher = parts[0];
     let extension_name = parts[1];
 
-    // 最新バージョンを取得
+    // Get latest version
     let version = get_extension_version(publisher, extension_name, proxy, verbose).await?;
     if verbose {
-        println!("{}の最新バージョン: {}", extension, version);
+        println!("Latest version of {}: {}", extension, version);
     }
 
-    // ダウンロードURLを作成
+    // Create download url
     let download_url = format!(
         "https://{publisher}.gallery.vsassets.io/_apis/public/gallery/publisher/{publisher}/extension/{extension_name}/{version}/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage",
         publisher = publisher,
@@ -95,23 +95,23 @@ async fn download_extension(
         version = version
     );
 
-    // ファイルパスを準備
+    // Make file path
     let file_name = format!("{publisher}.{extension_name}-{version}.vsix");
     let file_path = format!("{}/{}", destination, file_name);
 
-    // ファイルが既に存在するか確認
+    // Check file already exists
     if !no_cache && Path::new(&file_path).exists() {
         if verbose {
-            println!("ファイル{}は既に存在します。ダウンロードをスキップします。", file_path);
+            println!("file {} is already exists. Skip download.", file_path);
         }
         return Ok(());
     }
 
-    // HTTPクライアントを構築
+    // Create http client
     let client_builder = reqwest::Client::builder();
     let client = if let Some(proxy_url) = proxy {
         if verbose {
-            println!("プロキシを使用中: {}", proxy_url);
+            println!("Using proxy: {}", proxy_url);
         }
         let proxy = reqwest::Proxy::all(proxy_url)?;
         client_builder.proxy(proxy).build()?
@@ -119,21 +119,21 @@ async fn download_extension(
         client_builder.build()?
     };
 
-    // VSIXファイルをダウンロード
+    // Download VSIX file
     if verbose {
-        println!("{}からダウンロード中", download_url);
+        println!("Download form {}", download_url);
     }
     let resp = client.get(&download_url).send().await?;
     if !resp.status().is_success() {
-        eprintln!("{}のダウンロードに失敗しました", extension);
-        return Err(Box::from("VSIXのダウンロードに失敗しました"));
+        eprintln!("Fail download of {}", extension);
+        return Err(Box::from("Fail download of VSIX"));
     }
     let vsix_content = resp.bytes().await?;
 
-    // ファイルを保存
+    // Save file
     fs::write(&file_path, &vsix_content)?;
     if verbose {
-        println!("{}に保存しました", file_path);
+        println!("Saved in {}", file_path);
     }
 
     Ok(())
@@ -156,11 +156,11 @@ async fn get_extension_version(
         "flags": 914
     });
 
-    // HTTPクライアントを構築
+    // Create http client
     let client_builder = reqwest::Client::builder();
     let client = if let Some(proxy_url) = proxy {
         if verbose {
-            println!("APIリクエストにプロキシを使用中: {}", proxy_url);
+            println!("Using proxy for API request: {}", proxy_url);
         }
         let proxy = reqwest::Proxy::all(proxy_url)?;
         client_builder.proxy(proxy).build()?
@@ -168,9 +168,12 @@ async fn get_extension_version(
         client_builder.build()?
     };
 
-    // POSTリクエストを送信
+    // Send POST request
     if verbose {
-        println!("Marketplace APIにクエリを送信中: {}.{}", publisher, extension_name);
+        println!(
+            "Sending query for Marketplace API: {}.{}",
+            publisher, extension_name
+        );
     }
     let resp = client
         .post(api_url)
@@ -182,8 +185,8 @@ async fn get_extension_version(
         .await?;
 
     if !resp.status().is_success() {
-        eprintln!("Marketplace APIのクエリに失敗しました");
-        return Err(Box::from("Marketplace APIのクエリに失敗しました"));
+        eprintln!("Failed query for Marketplace API");
+        return Err(Box::from("Failed query for Marketplace API"));
     }
 
     let resp_json: serde_json::Value = resp.json().await?;
@@ -191,9 +194,8 @@ async fn get_extension_version(
     // バージョンを抽出
     let version = resp_json["results"][0]["extensions"][0]["versions"][0]["version"]
         .as_str()
-        .ok_or("拡張機能のバージョン取得に失敗しました")?
+        .ok_or("Failed get extension version")?
         .to_string();
 
     Ok(version)
 }
-
