@@ -8,11 +8,11 @@ use tokio;
 #[derive(Parser)]
 struct Args {
     /// Path to extensions.json
-    #[arg(short, long, default_value = "extensions.json")]
+    #[arg(short, long, default_value = "./.vscode/extensions.json")]
     input: String,
 
     /// Output directory
-    #[arg(short, long, default_value = "extensions")]
+    #[arg(short, long, default_value = "./.vscode/extensions")]
     destination: String,
 
     /// Force redownload if exists
@@ -191,7 +191,7 @@ async fn get_extension_version(
 
     let resp_json: serde_json::Value = resp.json().await?;
 
-    // バージョンを抽出
+    // Extract version
     let version = resp_json["results"][0]["extensions"][0]["versions"][0]["version"]
         .as_str()
         .ok_or("Failed get extension version")?

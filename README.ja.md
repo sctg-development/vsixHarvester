@@ -30,8 +30,8 @@ extHarvest [OPTIONS]
 
 #### オプション
 
-- `-i`, `--input <INPUT>`：`extensions.json`ファイルへのパス。デフォルトは`extensions.json`。
-- `-d`, `--destination <DESTINATION>`：VSIXファイルを保存するディレクトリ。デフォルトは`extensions`。
+- `-i`, `--input <INPUT>`：`extensions.json`ファイルへのパス。デフォルトは`./.vscode/extensions.json`。
+- `-d`, `--destination <DESTINATION>`：VSIXファイルを保存するディレクトリ。デフォルトは`./.vscode/extensions`。
 - `--no-cache`：拡張機能ファイルが既に存在していても再ダウンロードします。
 - `--proxy <PROXY>`：HTTPリクエストに使用するプロキシURL。
 - `-v`, `--verbose`：詳細なログを表示します。
@@ -41,8 +41,8 @@ extHarvest [OPTIONS]
 
 ```sh
 extHarvest \
-  --input extensions.json \
-  --destination extensions \
+  --input ./your/path/to/extensions.json \
+  --destination ./your/path/to/extensions \
   --no-cache \
   --verbose
 ```
@@ -64,4 +64,3 @@ extHarvest \
 ### 謝辞
 
 - [offvsix](https://github.com/exaluc/offvsix) に影響を受けました。
-

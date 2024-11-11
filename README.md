@@ -30,8 +30,8 @@ vsixHarvester [OPTIONS]
 
 #### Options
 
-- `-i`, `--input <INPUT>`: Path to the `extensions.json` file. Default is `extensions.json`.
-- `-d`, `--destination <DESTINATION>`: Destination folder to save the VSIX files. Default is `extensions`.
+- `-i`, `--input <INPUT>`: Path to the `extensions.json` file. Default is `./.vscode/extensions.json`.
+- `-d`, `--destination <DESTINATION>`: Destination folder to save the VSIX files. Default is `./.vscode/extensions`.
 - `--no-cache`: Force re-download even if the extension file already exists.
 - `--proxy <PROXY>`: Proxy URL to use for HTTP requests.
 - `-v`, `--verbose`: Enable verbose output for detailed logging.
@@ -41,8 +41,8 @@ vsixHarvester [OPTIONS]
 
 ```sh
 vsixHarvester \
-  --input extensions.json \
-  --destination extensions \
+  --input ./your/path/to/extensions.json \
+  --destination ./your/path/to/extensions \
   --no-cache \
   --verbose
 ```
@@ -64,4 +64,3 @@ The `extensions.json` file should have the following structure:
 ### Thanks
 
 - Inspired from [offvsix](https://github.com/exaluc/offvsix)
-
