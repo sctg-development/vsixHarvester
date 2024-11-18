@@ -30,7 +30,7 @@ struct Args {
     verbose: bool,
 
     /// Specify OS architecture
-    #[arg(long)]
+    #[arg(short, long)]
     arch: Option<String>,
 }
 
