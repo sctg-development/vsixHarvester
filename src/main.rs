@@ -1,4 +1,5 @@
 use clap::Parser;
+use reqwest::Client;
 use serde::Deserialize;
 use serde_json::json;
 use std::error::Error;
@@ -30,7 +31,7 @@ struct Args {
 
     /// Specify OS architecture
     #[arg(long)]
-    os_arch: Option<String>,
+    arch: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -83,12 +84,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             args.no_cache,
             args.proxy.as_deref(),
             args.verbose,
-            args.os_arch.as_deref(),
+            args.arch.as_deref(),
         )
         .await
         {
             eprintln!("Error occurred when downloading {}: {}", extension, e);
         }
+    }
+
+    let url = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/rust-lang/vsextensions/rust-analyzer/0.4.2187/vspackage?targetPlatform=win32-x64";
+    let client = Client::new();
+
+    let response = client.get(url).send().await?;
+    if response.status().is_success() {
+        let content = response.bytes().await?;
+        let output_path = Path::new(&args.destination).join("rust-analyzer.vsix");
+        fs::write(output_path, content)?;
+        if args.verbose {
+            println!("Download successful!");
+        }
+    } else {
+        eprintln!("Failed to download: {}", response.status());
     }
 
     Ok(())
