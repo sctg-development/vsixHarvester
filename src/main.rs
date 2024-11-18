@@ -26,6 +26,10 @@ struct Args {
     /// Show verbose infomation
     #[arg(short, long)]
     verbose: bool,
+
+    /// Specify OS architecture
+    #[arg(long)]
+    os_arch: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -52,6 +56,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             args.no_cache,
             args.proxy.as_deref(),
             args.verbose,
+            args.os_arch.as_deref(),
         )
         .await
         {
@@ -68,6 +73,7 @@ async fn download_extension(
     no_cache: bool,
     proxy: Option<&str>,
     verbose: bool,
+    os_arch: Option<&str>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if verbose {
         println!("Progress in extension: {}", extension);
@@ -88,15 +94,37 @@ async fn download_extension(
     }
 
     // Create download url
+    let target_platform = match os_arch {
+        Some("darwin-x64") => "darwin-x64",
+        Some("darwin-arm64") => "darwin-arm64",
+        Some("win32-x64") => "win32-x64",
+        Some("win32-arm64") => "win32-arm64",
+        Some("linux-x64") => "linux-x64",
+        Some("linux-arm64") => "linux-arm64",
+        Some(other) => {
+            eprintln!("Unsupported OS architecture: {}", other);
+            return Ok(());
+        }
+        None => {
+            eprintln!("OS architecture not specified.");
+            return Ok(());
+        }
+    };
+
     let download_url = format!(
-        "https://{publisher}.gallery.vsassets.io/_apis/public/gallery/publisher/{publisher}/extension/{extension_name}/{version}/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage",
+        "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/{publisher}/vsextensions/{extension_name}/{version}/vspackage?targetPlatform={target_platform}",
         publisher = publisher,
         extension_name = extension_name,
-        version = version
+        version = version,
+        target_platform = target_platform
     );
 
+    if verbose {
+        println!("Download URL: {}", download_url);
+    }
+
     // Make file path
-    let file_name = format!("{publisher}.{extension_name}-{version}.vsix");
+    let file_name = format!("{publisher}.{extension_name}-{version}@{target_platform}.vsix");
     let file_path = format!("{}/{}", destination, file_name);
 
     // Check file already exists
