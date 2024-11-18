@@ -43,26 +43,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
     // Read extensions.json
+    if args.verbose {
+        println!("Attempting to read file: {}", &args.input);
+    }
     let file_content = match fs::read_to_string(&args.input) {
         Ok(content) => content,
         Err(e) => {
-            eprintln!("Failed read extensions.json: {}", e);
+            eprintln!("Failed to read file {}: {}", &args.input, e);
             return Err(Box::new(e) as Box<dyn Error>);
         }
     };
     let extensions: Extensions = match serde_json::from_str(&file_content) {
         Ok(extensions) => extensions,
         Err(e) => {
-            eprintln!("Failed parse extensions.json: {}", e);
+            eprintln!("Failed to parse file {}: {}", &args.input, e);
             return Err(Box::new(e) as Box<dyn Error>);
         }
     };
 
     // Create output directory
-    fs::create_dir_all(&args.destination)?;
+    if args.verbose {
+        println!("Attempting to create directory: {}", &args.destination);
+    }
+    if let Err(e) = fs::create_dir_all(&args.destination) {
+        eprintln!("Failed to create directory {}: {}", &args.destination, e);
+        return Err(Box::new(e) as Box<dyn Error>);
+    }
 
-    // Download each extensions
+    // Download each extension
     for extension in extensions.recommendations {
+        if args.verbose {
+            println!("Attempting to download extension: {}", &extension);
+        }
         if let Err(e) = download_extension(
             &extension,
             &args.destination,
@@ -73,7 +85,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .await
         {
-            eprintln!("Error has occored when downloading {}: {}", extension, e);
+            eprintln!("Error occurred when downloading {}: {}", extension, e);
         }
     }
 
@@ -143,7 +155,10 @@ async fn download_extension(
     // Check file already exists
     if !no_cache && Path::new(&file_path).exists() {
         if verbose {
-            println!("Skip download: File is already exists. File Name {}.", file_path);
+            println!(
+                "Skip download: File is already exists. File Name {}.",
+                file_path
+            );
         }
         return Ok(());
     }
