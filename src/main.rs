@@ -1,6 +1,7 @@
 use clap::Parser;
 use serde::Deserialize;
 use serde_json::json;
+use std::error::Error;
 use std::fs;
 use std::path::Path;
 use tokio;
@@ -42,8 +43,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
     // Read extensions.json
-    let file_content = fs::read_to_string(&args.input)?;
-    let extensions: Extensions = serde_json::from_str(&file_content)?;
+    let file_content = match fs::read_to_string(&args.input) {
+        Ok(content) => content,
+        Err(e) => {
+            eprintln!("Failed read extensions.json: {}", e);
+            return Err(Box::new(e) as Box<dyn Error>);
+        }
+    };
+    let extensions: Extensions = match serde_json::from_str(&file_content) {
+        Ok(extensions) => extensions,
+        Err(e) => {
+            eprintln!("Failed parse extensions.json: {}", e);
+            return Err(Box::new(e) as Box<dyn Error>);
+        }
+    };
 
     // Create output directory
     fs::create_dir_all(&args.destination)?;
@@ -130,7 +143,7 @@ async fn download_extension(
     // Check file already exists
     if !no_cache && Path::new(&file_path).exists() {
         if verbose {
-            println!("file {} is already exists. Skip download.", file_path);
+            println!("Skip download: File is already exists. File Name {}.", file_path);
         }
         return Ok(());
     }
