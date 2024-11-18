@@ -36,7 +36,7 @@ vsixHarvester [OPTIONS]
 - `--proxy <PROXY>`: Proxy URL to use for HTTP requests.
 - `-v`, `--verbose`: Enable verbose output for detailed logging.
 - `-h`, `--help`: Print help information.
-- `--os-arch <OS-ARCH>`: OS architecture to install the extensions for.
+- `-a`, `--arch <ARCHITECTURE>`: OS architecture to install the extensions for.
 
 #### Example
 
@@ -45,11 +45,11 @@ vsixHarvester \
   --input ./your/path/to/extensions.json \
   --destination ./your/path/to/extensions \
   --no-cache \
-  --os-arch win32-x64 \
+  --arch win32-x64 \
   --verbose
 ```
 
-##### OS architecture options
+##### Architecture options
 
 - `win32-x64`
 - `win32-arm64`

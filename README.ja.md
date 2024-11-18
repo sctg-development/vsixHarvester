@@ -19,13 +19,13 @@
 ### インストール
 
 ```sh
-cargo install extHarvest
+cargo install vsixHarvest
 ```
 
 ### 使用方法
 
 ```sh
-extHarvest [OPTIONS]
+vsixHarvest [OPTIONS]
 ```
 
 #### オプション
@@ -36,12 +36,12 @@ extHarvest [OPTIONS]
 - `--proxy <PROXY>`：HTTPリクエストに使用するプロキシURL。
 - `-v`, `--verbose`：詳細なログを表示します。
 - `-h`, `--help`：ヘルプ情報を表示。
-- `--os-arch <OS-ARCH>`：拡張機能をインストールする対象OSアーキテクチャ。
+- `--arch <ARCHITECTURE>`：拡張機能をインストールする対象OSアーキテクチャ。
 
 #### 使用例
 
 ```sh
-extHarvest \
+vsixHarvest \
   --input ./your/path/to/extensions.json \
   --destination ./your/path/to/extensions \
   --no-cache \
@@ -49,7 +49,7 @@ extHarvest \
   --verbose
 ```
 
-##### OSアーキテクチャオプション
+##### アーキテクチャオプション
 
 - `win32-x64`
 - `win32-arm64`
