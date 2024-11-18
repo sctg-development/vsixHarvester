@@ -1,6 +1,6 @@
 [package]
 name = "vsixHarvester"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 authors = ["bamboogeneral@shortarrow.jp"]
 description = "A CLI tool to download VSCode extensions from extensions.json"
