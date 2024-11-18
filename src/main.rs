@@ -38,6 +38,14 @@ struct Extensions {
     recommendations: Vec<String>,
 }
 
+fn create_directory_if_not_exists(path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let path = Path::new(path);
+    if !path.exists() {
+        fs::create_dir_all(path)?;
+    }
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
@@ -61,14 +69,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
-    // Create output directory
-    if args.verbose {
-        println!("Attempting to create directory: {}", &args.destination);
-    }
-    if let Err(e) = fs::create_dir_all(&args.destination) {
-        eprintln!("Failed to create directory {}: {}", &args.destination, e);
-        return Err(Box::new(e) as Box<dyn Error>);
-    }
+    // Ensure the destination directory exists
+    create_directory_if_not_exists(&args.destination)?;
 
     // Download each extension
     for extension in extensions.recommendations {
