@@ -1,0 +1,139 @@
+# Copyright 2024 SCTG Development - Ronan LE MEILLAT
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third party and are governed by
+# separate terms of service, privacy policy, and support.
+# Online documentation.
+
+# GitHub recommends pinning actions to a commit SHA.
+# To get a newer version, you must update the SHA.
+# You can also reference a tag or a branch, but the action can change without warning.
+
+name: Generate multi-arch Docker image and release linux binaries
+
+permissions:
+  id-token: write
+  contents: write
+  attestations: write
+  packages: write
+
+on:
+  release:
+    types: [published]
+  # release:
+  # workflow_dispatch:
+  # workflow_call:
+  #   secrets:
+  #     DOCKER_USERNAME:
+  #       required: true
+  #     DOCKER_PASSWORD:
+  #       required: true
+
+jobs:
+  push_to_registry:
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      attestations: write
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_ARMHF_EXPERIMENTAL: enabled # Set to 'enabled' to enable armhf build
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: 'linux/arm64,linux/armhf,linux/amd64'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          
+      - name: Extract metadata (tags, labels) for Docker integration image
+        id: metaintegration
+        uses: docker/metadata-action@v5
+        with:
+          images: sctg/vsixHarvester
+        
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/arm64, linux/amd64 #, linux/armhf
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+          tags: ${{ steps.metaintegration.outputs.tags }}
+          labels: ${{ steps.metaintegration.outputs.labels }}
+
+      - name: Pull and extract files from Docker image (amd64)
+        continue-on-error: true
+        run: |
+          export TAG=${{ github.event.release.tag_name }}
+          mkdir -p /tmp/amd64/
+          docker pull sctg/vsixHarvester:latest
+          docker create --platform linux/amd64 --name temp-container-amd64 sctg/vsixHarvester:latest
+          docker cp temp-container-amd64:/usr/local/bin/vsixHarvester /tmp/amd64/
+          docker rm temp-container-amd64
+          cd /tmp/amd64/
+          mv vsixHarvester /tmp/amd64/vsixHarvester_linux_amd64_static_${{ github.event.release.tag_name }}
+
+      - name: Pull and extract files from Docker image (arm64)
+        continue-on-error: true
+        run: |
+          export TAG=${{ github.event.release.tag_name }}
+          mkdir -p /tmp/arm64/
+          docker pull sctg/vsixHarvester:latest
+          docker create --platform linux/arm64 --name temp-container-arm64 sctg/vsixHarvester:latest
+          docker cp temp-container-arm64:/usr/local/bin/vsixHarvester /tmp/arm64/
+          docker rm temp-container-arm64
+          cd /tmp/arm64/
+          mv vsixHarvester /tmp/arm64/vsixHarvester_linux_arm64_static_${{ github.event.release.tag_name }}
+
+      - name: Pull and extract files from Docker image (armhf)
+        continue-on-error: true
+        if: ${{ env.DOCKER_ARMHF_EXPERIMENTAL == 'enabled' }}
+        run: |
+          export TAG=${{ github.event.release.tag_name }}
+          mkdir -p /tmp/armhf/
+          docker pull sctg/vsixHarvester:latest
+          docker create --platform linux/armhf --name temp-container-armhf sctg/vsixHarvester:latest
+          docker cp temp-container-armhf:/usr/local/bin/vsixHarvester /tmp/armhf/
+          docker rm temp-container-armhf
+          cd /tmp/armhf/
+          mv vsixHarvester /tmp/armhf/vsixHarvester_linux_armhf_static_${{ github.event.release.tag_name }}
+
+      - name: Upload Release
+        continue-on-error: true
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+            ls -lR
+            gh release upload ${{ github.event.release.tag_name }} /tmp/amd64/vsixHarvester_linux_amd64_static_${{ github.event.release.tag_name }} --clobber
+            gh release upload ${{ github.event.release.tag_name }} /tmp/arm64/vsixHarvester_linux_arm64_static_${{ github.event.release.tag_name }} --clobber
+
+      - name: Upload armhf release
+        continue-on-error: true
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ env.DOCKER_ARMHF_EXPERIMENTAL == 'enabled' }}
+        run: |
+            gh release upload ${{ github.event.release.tag_name }} /tmp/armhf/vsixHarvester_linux_armhf_static_${{ github.event.release.tag_name }} --clobber
+
+      - name: Attest release
+        uses: actions/attest-build-provenance@v1
+        continue-on-error: true
+        with:
+          subject-path: '/tmp/amd64/vsixHarvester_linux_amd64_static_${{ github.event.release.tag_name }},/tmp/arm64/vsixHarvester_linux_arm64_static_${{ github.event.release.tag_name }},/tmp/armhf/vsixHarvester_linux_armhf_static_${{ github.event.release.tag_name }}'
