@@ -38,3 +38,4 @@ RUN export TARGET=$(cat /build/_target) \
     && cp /build/target/$(cat /build/_target)/release/vsixHarvester /build/ubuntu-noble/bin/
 FROM ubuntu:noble
 COPY --from=builder /build/ubuntu-noble/bin/vsixHarvester /usr/local/bin/vsixHarvester
+ENTRYPOINT [ "/usr/local/bin/vsixHarvester" ]
