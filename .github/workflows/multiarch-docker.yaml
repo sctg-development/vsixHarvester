@@ -85,7 +85,7 @@ jobs:
           mkdir -p /tmp/amd64/
           docker pull sctg/vsixharvester:latest
           docker create --platform linux/amd64 --name temp-container-amd64 sctg/vsixharvester:latest
-          docker cp temp-container-amd64:/usr/local/bin/vsixharvester /tmp/amd64/
+          docker cp temp-container-amd64:/usr/local/bin/vsixHarvester /tmp/amd64/
           docker rm temp-container-amd64
           cd /tmp/amd64/
           mv vsixHarvester /tmp/amd64/vsixHarvester_linux_amd64_static_${{ github.event.release.tag_name }}
