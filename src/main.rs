@@ -1,5 +1,4 @@
 use clap::Parser;
-use reqwest::Client;
 use serde::Deserialize;
 use serde_json::json;
 use std::error::Error;
@@ -8,13 +7,14 @@ use std::path::Path;
 use tokio;
 
 #[derive(Parser)]
+#[command(version = "0.2.0", about = "Download VSCode extensions for offline use")]
 struct Args {
     /// Path to extensions.json
-    #[arg(short, long, default_value = "./.vscode/extensions.json")]
+    #[arg(short, long, default_value = "./extensions.json")]
     input: String,
 
     /// Output directory
-    #[arg(short, long, default_value = "./.vscode/extensions")]
+    #[arg(short, long, default_value = "./extensions")]
     destination: String,
 
     /// Force redownload if exists
@@ -28,15 +28,17 @@ struct Args {
     /// Show verbose infomation
     #[arg(short, long)]
     verbose: bool,
-
-    /// Specify OS architecture
-    #[arg(short, long)]
-    arch: Option<String>,
 }
 
 #[derive(Deserialize)]
 struct Extensions {
-    recommendations: Vec<String>,
+    universal: Option<Vec<String>>,
+    linux_x64: Option<Vec<String>>,
+    linux_arm64: Option<Vec<String>>,
+    darwin_x64: Option<Vec<String>>,
+    darwin_arm64: Option<Vec<String>>,
+    win32_x64: Option<Vec<String>>,
+    win32_arm64: Option<Vec<String>>,
 }
 
 fn create_directory_if_not_exists(path: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -73,38 +75,52 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Ensure the destination directory exists
     create_directory_if_not_exists(&args.destination)?;
 
-    // Download each extension
-    for extension in extensions.recommendations {
-        if args.verbose {
-            println!("Attempting to download extension: {}", &extension);
-        }
-        if let Err(e) = download_extension(
-            &extension,
-            &args.destination,
-            args.no_cache,
-            args.proxy.as_deref(),
-            args.verbose,
-            args.arch.as_deref(),
-        )
-        .await
-        {
-            eprintln!("Error occurred when downloading {}: {}", extension, e);
-        }
-    }
 
-    let url = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/rust-lang/vsextensions/rust-analyzer/0.4.2187/vspackage?targetPlatform=win32-x64";
-    let client = Client::new();
+    // Define all platform categories with their target platform identifiers
+    let platforms = [
+        ("universal", None),
+        ("linux_x64", Some("linux-x64")),
+        ("linux_arm64", Some("linux-arm64")),
+        ("darwin_x64", Some("darwin-x64")),
+        ("darwin_arm64", Some("darwin-arm64")),
+        ("win32_x64", Some("win32-x64")),
+        ("win32_arm64", Some("win32-arm64")),
+    ];
 
-    let response = client.get(url).send().await?;
-    if response.status().is_success() {
-        let content = response.bytes().await?;
-        let output_path = Path::new(&args.destination).join("rust-analyzer.vsix");
-        fs::write(output_path, content)?;
-        if args.verbose {
-            println!("Download successful!");
+    // Process extensions for each platform
+    for (platform_field, target_platform) in platforms {
+        // Use reflection to get the field from the extensions struct
+        let extensions_list = match platform_field {
+            "universal" => &extensions.universal,
+            "linux_x64" => &extensions.linux_x64,
+            "linux_arm64" => &extensions.linux_arm64,
+            "darwin_x64" => &extensions.darwin_x64,
+            "darwin_arm64" => &extensions.darwin_arm64,
+            "win32_x64" => &extensions.win32_x64,
+            "win32_arm64" => &extensions.win32_arm64,
+            _ => continue, // Skip unknown platforms
+        };
+
+        // Process the extensions for this platform if any
+        if let Some(ext_list) = extensions_list {
+            for extension in ext_list {
+                if args.verbose {
+                    println!("Attempting to download extension: {}", &extension);
+                }
+                if let Err(e) = download_extension(
+                    extension,
+                    &args.destination,
+                    args.no_cache,
+                    args.proxy.as_deref(),
+                    args.verbose,
+                    target_platform,
+                )
+                .await
+                {
+                    eprintln!("Error occurred when downloading {}: {}", extension, e);
+                }
+            }
         }
-    } else {
-        eprintln!("Failed to download: {}", response.status());
     }
 
     Ok(())
@@ -137,38 +153,54 @@ async fn download_extension(
     }
 
     // Create download url
-    let target_platform = match os_arch {
-        Some("darwin-x64") => "darwin-x64",
-        Some("darwin-arm64") => "darwin-arm64",
-        Some("win32-x64") => "win32-x64",
-        Some("win32-arm64") => "win32-arm64",
-        Some("linux-x64") => "linux-x64",
-        Some("linux-arm64") => "linux-arm64",
-        Some(other) => {
-            eprintln!("Unsupported OS architecture: {}", other);
-            return Ok(());
-        }
-        None => {
-            eprintln!("OS architecture not specified.");
-            return Ok(());
-        }
-    };
+    // let target_platform = match os_arch {
+    //     Some("darwin-x64") => "darwin-x64",
+    //     Some("darwin-arm64") => "darwin-arm64",
+    //     Some("win32-x64") => "win32-x64",
+    //     Some("win32-arm64") => "win32-arm64",
+    //     Some("linux-x64") => "linux-x64",
+    //     Some("linux-arm64") => "linux-arm64",
+    //     Some(other) => {
+    //         eprintln!("Unsupported OS architecture: {}", other);
+    //         return Ok(());
+    //     }
+    //     None => {
+    //         eprintln!("OS architecture not specified.");
+    //         return Ok(());
+    //     }
+    // };
 
-    let download_url = format!(
-        "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/{publisher}/vsextensions/{extension_name}/{version}/vspackage?targetPlatform={target_platform}",
-        publisher = publisher,
-        extension_name = extension_name,
-        version = version,
-        target_platform = target_platform
-    );
+    let download_url: String;
+    let file_name: String;
+    let file_path: String;
+    if os_arch.is_some() {
+        let target_platform = os_arch.unwrap();
+        file_name = format!("{publisher}.{extension_name}-{version}@{target_platform}.vsix");
+        file_path = format!("{}/{}", destination, file_name);
+        download_url = format!(
+            "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/{publisher}/vsextensions/{extension_name}/{version}/vspackage?targetPlatform={target_platform}",
+            publisher = publisher,
+            extension_name = extension_name,
+            version = version,
+            target_platform = os_arch.unwrap()
+        );
+    } else {
+        file_name = format!("{publisher}.{extension_name}-{version}.vsix");
+        file_path = format!("{}/{}", destination, file_name);
+        download_url = format!(
+            "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/{publisher}/vsextensions/{extension_name}/{version}/vspackage",
+            publisher = publisher,
+            extension_name = extension_name,
+            version = version
+        );
+    }
 
     if verbose {
         println!("Download URL: {}", download_url);
     }
 
     // Make file path
-    let file_name = format!("{publisher}.{extension_name}-{version}@{target_platform}.vsix");
-    let file_path = format!("{}/{}", destination, file_name);
+
 
     // Check file already exists
     if !no_cache && Path::new(&file_path).exists() {

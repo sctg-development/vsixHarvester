@@ -30,13 +30,12 @@ vsixHarvester [OPTIONS]
 
 #### Options
 
-- `-i`, `--input <INPUT>`: Path to the `extensions.json` file. Default is `./.vscode/extensions.json`.
-- `-d`, `--destination <DESTINATION>`: Destination folder to save the VSIX files. Default is `./.vscode/extensions`.
+- `-i`, `--input <INPUT>`: Path to the `extensions.json` file. Default is `./extensions.json`.
+- `-d`, `--destination <DESTINATION>`: Destination folder to save the VSIX files. Default is `./extensions`.
 - `--no-cache`: Force re-download even if the extension file already exists.
 - `--proxy <PROXY>`: Proxy URL to use for HTTP requests.
 - `-v`, `--verbose`: Enable verbose output for detailed logging.
 - `-h`, `--help`: Print help information.
-- `-a`, `--arch <ARCHITECTURE>`: OS architecture to install the extensions for.
 
 #### Example
 
@@ -45,7 +44,6 @@ vsixHarvester \
   --input ./your/path/to/extensions.json \
   --destination ./your/path/to/extensions \
   --no-cache \
-  --arch win32-x64 \
   --verbose
 ```
 
@@ -64,10 +62,22 @@ The `extensions.json` file should have the following structure:
 
 ```json
 {
-  "recommendations": [
-    "publisher.extensionName",
-    "anotherPublisher.anotherExtensionName",
-    // Add more extensions as needed
+  "universal": [
+    // "publisher.extensionName",
+    // "anotherPublisher.anotherExtensionName",
+    "GitHub.copilot",
+    "GitHub.copilot-chat",
+    "golang.Go",
+    "yzhang.markdown-all-in-one",
+    "eamodio.gitlens"
+  ],
+  "linux_x64":[
+    "rust-lang.rust-analyzer",
+    "ms-python.python"
+  ],
+  "linux_arm64":[
+    "rust-lang.rust-analyzer",
+    "ms-python.python"
   ]
 }
 ```
@@ -75,3 +85,4 @@ The `extensions.json` file should have the following structure:
 ### Thanks
 
 - Inspired from [offvsix](https://github.com/exaluc/offvsix)
+- Modified from [vsixHarvester](https://github.com/ShortArrow/vsixHarvester)
