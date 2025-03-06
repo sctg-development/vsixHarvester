@@ -26,30 +26,11 @@ RUN if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
        . /root/.cargo/env && rustup target add x86_64-unknown-linux-musl; \
        echo "x86_64-unknown-linux-musl" > /build/_target ; \
     fi
-COPY sevenz-rust  /build/sevenz-rust
+
 COPY src /build/src
-COPY build.rs /build/build.rs
 COPY Cargo.toml /build/Cargo.toml
-RUN mkdir -p /build/caroot
-# Set up cargo config to use git tool
-# this workaround is needed because QEMU emulating 32 bits platfom on 64 bits host
-# see https://github.com/rust-lang/cargo/issues/8719
-# RUN mv /root/.cargo /tmp && rm -rf /root/.cargo && mkdir -p /root/.cargo 
-# RUN --mount=type=tmpfs,target=/root/.cargo export TARGET=$(cat /build/_target) \
-#     && mkdir -p /root/.cargo \
-#     && cp -av /tmp/.cargo/* /root/.cargo/ && ls -lR /root/.cargo \
-#     && if [ ! -f /root/.cargo/config.toml ]; then \
-#         echo "" > /root/.cargo/config.toml; \
-#     fi \
-#     && if [ "$(dpkg --print-architecture)" = "armhf" ]; then \
-#         export CFLAGS=" -I/usr/include/arm-linux-musleabihf -I/usr/lib/gcc/arm-linux-gnueabihf/13/include -I/usr/include"; \
-#     fi && \
-#     awk 'BEGIN{net_section=0;git_fetch_found=0;printed=0}/^\[net\]/{net_section=1;print;next}/^\[/{if(net_section&&!git_fetch_found){print "git-fetch-with-cli = true";printed=1}net_section=0;print;next}net_section&&/^git-fetch-with-cli\s*=/{print "git-fetch-with-cli = true";git_fetch_found=1;next}{print}END{if(!printed&&!git_fetch_found){if(!net_section)print "\n[net]";print "git-fetch-with-cli = true"}}' /root/.cargo/config.toml > /root/.cargo/config.tmp && \
-#     mv /root/.cargo/config.tmp /root/.cargo/config.toml \
-#     && . /root/.cargo/env && cd /build \ 
-#     && cargo build --target=$TARGET --release || (echo "Build failed, entering sleep mode for debugging..." && cp -av /root/.cargo /build/ && exit 1) \
-#     && mkdir -p /build/ubuntu-noble/bin \
-#     && cp /build/target/$(cat /build/_target)/release/vsixHarvester /build/ubuntu-noble/bin/ 
+
+
 RUN export TARGET=$(cat /build/_target) \
     && . /root/.cargo/env && cd /build \ 
     && cargo build --target=$TARGET --release || (echo "Build failed, entering sleep mode for debugging..." && cp -av /root/.cargo /build/ && exit 1) \

@@ -71,7 +71,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/arm64, linux/amd64 #, linux/armhf
+          platforms: linux/arm64, linux/amd64 , linux/armhf
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
@@ -83,9 +83,9 @@ jobs:
         run: |
           export TAG=${{ github.event.release.tag_name }}
           mkdir -p /tmp/amd64/
-          docker pull sctg/vsixHarvester:latest
-          docker create --platform linux/amd64 --name temp-container-amd64 sctg/vsixHarvester:latest
-          docker cp temp-container-amd64:/usr/local/bin/vsixHarvester /tmp/amd64/
+          docker pull sctg/vsixharvester:latest
+          docker create --platform linux/amd64 --name temp-container-amd64 sctg/vsixharvester:latest
+          docker cp temp-container-amd64:/usr/local/bin/vsixharvester /tmp/amd64/
           docker rm temp-container-amd64
           cd /tmp/amd64/
           mv vsixHarvester /tmp/amd64/vsixHarvester_linux_amd64_static_${{ github.event.release.tag_name }}
@@ -95,8 +95,8 @@ jobs:
         run: |
           export TAG=${{ github.event.release.tag_name }}
           mkdir -p /tmp/arm64/
-          docker pull sctg/vsixHarvester:latest
-          docker create --platform linux/arm64 --name temp-container-arm64 sctg/vsixHarvester:latest
+          docker pull sctg/vsixharvester:latest
+          docker create --platform linux/arm64 --name temp-container-arm64 sctg/vsixharvester:latest
           docker cp temp-container-arm64:/usr/local/bin/vsixHarvester /tmp/arm64/
           docker rm temp-container-arm64
           cd /tmp/arm64/
@@ -108,8 +108,8 @@ jobs:
         run: |
           export TAG=${{ github.event.release.tag_name }}
           mkdir -p /tmp/armhf/
-          docker pull sctg/vsixHarvester:latest
-          docker create --platform linux/armhf --name temp-container-armhf sctg/vsixHarvester:latest
+          docker pull sctg/vsixharvester:latest
+          docker create --platform linux/armhf --name temp-container-armhf sctg/vsixharvester:latest
           docker cp temp-container-armhf:/usr/local/bin/vsixHarvester /tmp/armhf/
           docker rm temp-container-armhf
           cd /tmp/armhf/

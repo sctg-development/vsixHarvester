@@ -75,6 +75,12 @@ jobs:
             cp "target/${{ matrix.target }}/release/$binary_name" "vsixHarvester_${{ matrix.family }}_${{ matrix.arch }}_${{ env.VERSION }}"
             echo "ASSET=vsixHarvester_${{ matrix.family }}_${{ matrix.arch }}_${{ env.VERSION }}" >> $GITHUB_ENV 
           fi
+          
+      - name: Attest release
+        uses: actions/attest-build-provenance@v1
+        continue-on-error: true
+        with:
+          subject-path: "vsixHarvester_${{ matrix.family }}_${{ matrix.arch }}_${{ env.VERSION }}"
 
       - name: Release
         uses: softprops/action-gh-release@v1

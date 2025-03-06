@@ -2,7 +2,8 @@
 
 ## VSCode Extension Downloader in Rust
 
-This Rust program reads the `recommendations` array from an `extensions.json` file and downloads the corresponding VSIX packages for Visual Studio Code extensions.
+This Rust program reads the `recommendations` array from an `extensions.json` file and downloads the corresponding VSIX packages for Visual Studio Code extensions.  
+This is an adaptation of the original [vsixHarvester](https://github.com/ShortArrow/vsixHarvester), it does not use the Visual Studio Code `extensions.json` file, but a custom one. The custom `extensions.json` file allows to specify the architecture for each extension.
 
 ### Features
 
@@ -12,6 +13,15 @@ This Rust program reads the `recommendations` array from an `extensions.json` fi
 - Option to force re-download even if the file already exists.
 - Provides verbose output for detailed logging.
 
+### Binaries
+
+- [Windows](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.1/vsixHarvester_windows_amd64_0.2.1.exe)
+- [macOS AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.1/vsixHarvester_macos_amd64_0.2.1)
+- [macOS ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.1/vsixHarvester_macos_arm64_0.2.1)
+- [Linux static](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.1/vsixHarvester_linux_amd64_0.2.1)
+- [Linux static ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.1/vsixHarvester_linux_arm64_0.2.1)
+- [Linux static ARM32](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.1/vsixHarvester_macos_armhf_0.2.1)
+  
 ### Prerequisites
 
 - **Rust** and **Cargo** installed on your system. You can install them from [rustup.rs](https://rustup.rs/).

@@ -7,7 +7,7 @@ use std::path::Path;
 use tokio;
 
 #[derive(Parser)]
-#[command(version = "0.2.0", about = "Download VSCode extensions for offline use")]
+#[command(version = "0.2.1", about = "Download VSCode extensions for offline use")]
 struct Args {
     /// Path to extensions.json
     #[arg(short, long, default_value = "./extensions.json")]
@@ -151,24 +151,6 @@ async fn download_extension(
     if verbose {
         println!("Latest version of {}: {}", extension, version);
     }
-
-    // Create download url
-    // let target_platform = match os_arch {
-    //     Some("darwin-x64") => "darwin-x64",
-    //     Some("darwin-arm64") => "darwin-arm64",
-    //     Some("win32-x64") => "win32-x64",
-    //     Some("win32-arm64") => "win32-arm64",
-    //     Some("linux-x64") => "linux-x64",
-    //     Some("linux-arm64") => "linux-arm64",
-    //     Some(other) => {
-    //         eprintln!("Unsupported OS architecture: {}", other);
-    //         return Ok(());
-    //     }
-    //     None => {
-    //         eprintln!("OS architecture not specified.");
-    //         return Ok(());
-    //     }
-    // };
 
     let download_url: String;
     let file_name: String;
