@@ -7,7 +7,10 @@ use std::path::Path;
 use tokio;
 
 #[derive(Parser)]
-#[command(version = "0.2.1", about = "Download VSCode extensions for offline use")]
+#[command(
+    version = "0.2.2",
+    about = "Download VSCode extensions for offline use"
+)]
 struct Args {
     /// Path to extensions.json
     #[arg(short, long, default_value = "./extensions.json")]
@@ -74,7 +77,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Ensure the destination directory exists
     create_directory_if_not_exists(&args.destination)?;
-
 
     // Define all platform categories with their target platform identifiers
     let platforms = [
@@ -183,7 +185,6 @@ async fn download_extension(
 
     // Make file path
 
-
     // Check file already exists
     if !no_cache && Path::new(&file_path).exists() {
         if verbose {
@@ -202,24 +203,29 @@ async fn download_extension(
             println!("Using proxy: {}", proxy_url);
         }
         let proxy = reqwest::Proxy::all(proxy_url)?;
-        client_builder.proxy(proxy).build()?
+        client_builder.gzip(true).proxy(proxy).build()?
     } else {
-        client_builder.build()?
+        client_builder.gzip(true).build()?
     };
 
     // Download VSIX file
     if verbose {
         println!("Download form {}", download_url);
     }
-    let resp = client.get(&download_url).send().await?;
+    let resp = client
+        .get(&download_url)
+        .header(reqwest::header::ACCEPT_ENCODING, "gzip")
+        .send()
+        .await?;
     if !resp.status().is_success() {
         eprintln!("Fail download of {}", extension);
         return Err(Box::from("Fail download of VSIX"));
     }
-    let vsix_content = resp.bytes().await?;
+
+    let vsix_raw_content = resp.bytes().await?;
 
     // Save file
-    fs::write(&file_path, &vsix_content)?;
+    fs::write(&file_path, &vsix_raw_content)?;
     if verbose {
         println!("Saved in {}", file_path);
     }
