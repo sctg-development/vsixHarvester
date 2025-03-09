@@ -148,9 +148,9 @@ async fn download_extensions_from_json(args: &Args) -> Result<()> {
         let extensions_list = Architecture::get_extensions_list(platform_field, &extensions);
 
         // Process the extensions for this platform if any
-        if let Some(ext_list) = extensions_list {
+        if let Some(platform_extensions) = extensions_list {
             let mut tasks = Vec::new();
-            for str_extension in ext_list {
+            for str_extension in platform_extensions {
                 let extension = Extension::from_id(str_extension)?;
                 info!("Attempting to download extension: {}", extension.to_id());
                 let task = download_extension(
