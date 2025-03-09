@@ -55,40 +55,70 @@ pub(crate) async fn process_extensions(args: &Args) -> Result<()> {
     // Handle direct extension download if specified
     if let Some(str_extension) = &args.download {
         let extension = Extension::from_id(str_extension)?;
-        info!("Direct download mode for extension: {}", extension.to_id());
-        // Map architecture to target platform
-        let target_platform = args
-            .arch
-            .as_deref()
-            .and_then(Architecture::from_cli_arg)
-            .and_then(|arch| arch.to_target_platform());
+        return download_single_extension(extension, args).await;
+    } else {
+        return download_extensions_from_json(args).await;
+    }
+}
 
-        if target_platform.is_some() {
-            info!("Using architecture: {}", target_platform.unwrap());
-        } else {
-            info!("Using universal architecture");
-        }
+/// Download a single extension
+///
+/// # Arguments
+/// * `extension` - The extension to download
+/// * `args` - The command line arguments
+///
+/// # Returns
+///
+/// A Result indicating success or an error that occurred
+async fn download_single_extension(extension: Extension<'_>, args: &Args) -> Result<()> {
+    info!("Direct download mode for extension: {}", extension.to_id());
+    // Map architecture to target platform
+    let target_platform = args
+        .arch
+        .as_deref()
+        .and_then(Architecture::from_cli_arg)
+        .and_then(|arch| arch.to_target_platform());
 
-        // Ensure the destination directory exists
-        create_directory_if_not_exists(&args.destination)?;
-
-        // Download the extension
-        if let Err(e) = download_extension(
-            extension,
-            &args.destination,
-            args.no_cache,
-            args.proxy.as_deref(),
-            target_platform,
-        )
-        .await
-        {
-            error!("Error occurred when downloading {}: {}", str_extension, e);
-            return Err(e);
-        }
-
-        return Ok(());
+    if target_platform.is_some() {
+        info!("Using architecture: {}", target_platform.unwrap());
+    } else {
+        info!("Using universal architecture");
     }
 
+    // Ensure the destination directory exists
+    create_directory_if_not_exists(&args.destination)?;
+
+    // Download the extension
+    if let Err(e) = download_extension(
+        extension.clone(),
+        &args.destination,
+        args.no_cache,
+        args.proxy.as_deref(),
+        target_platform,
+    )
+    .await
+    {
+        error!(
+            "Error occurred when downloading {}: {}",
+            extension.to_id(),
+            e
+        );
+        return Err(e);
+    }
+
+    return Ok(());
+}
+
+/// Download extensions from extensions.json
+///
+/// # Arguments
+///
+/// * `args` - The command line arguments
+///
+/// # Returns
+///
+/// A Result indicating success or an error that occurred
+async fn download_extensions_from_json(args: &Args) -> Result<()> {
     // Read extensions.json
     info!("Attempting to read file: {}", &args.input);
     let file_content = match fs::read_to_string(&args.input) {
@@ -145,8 +175,7 @@ pub(crate) async fn process_extensions(args: &Args) -> Result<()> {
             }
         }
     }
-
-    Ok(())
+    return Ok(());
 }
 
 #[tokio::main]
