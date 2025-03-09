@@ -12,15 +12,17 @@ This is an adaptation of the original [vsixHarvester](https://github.com/ShortAr
 - Supports proxy configuration.
 - Option to force re-download even if the file already exists.
 - Provides verbose output for detailed logging.
+- Direct download of a single extension without using extensions.json file.
+- Parrallel download of extensions.
 
 ### Binaries
 
-- [Windows](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.2/vsixHarvester_windows_amd64_0.2.2.exe)
-- [macOS AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.2/vsixHarvester_macos_amd64_0.2.2)
-- [macOS ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.2/vsixHarvester_macos_arm64_0.2.2)
-- [Linux static AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.2/vsixHarvester_linux_amd64_static_0.2.2)
-- [Linux static ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.2/vsixHarvester_linux_arm64_static_0.2.2)
-- [Linux static ARM32](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.2/vsixHarvester_linux_armhf_static_0.2.2)
+- [Windows](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.3/vsixHarvester_windows_amd64_0.2.3.exe)
+- [macOS AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.3/vsixHarvester_macos_amd64_0.2.3)
+- [macOS ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.3/vsixHarvester_macos_arm64_0.2.3)
+- [Linux static AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.3/vsixHarvester_linux_amd64_static_0.2.3)
+- [Linux static ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.3/vsixHarvester_linux_arm64_static_0.2.3)
+- [Linux static ARM32](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.3/vsixHarvester_linux_armhf_static_0.2.3)
   
 ### Prerequisites
 
@@ -42,8 +44,11 @@ vsixHarvester [OPTIONS]
 
 - `-i`, `--input <INPUT>`: Path to the `extensions.json` file. Default is `./extensions.json`.
 - `-d`, `--destination <DESTINATION>`: Destination folder to save the VSIX files. Default is `./extensions`.
+- `-D`, `--download <EXTENSION>`: Download a single extension (e.g., 'golang.Go') without using extensions.json.
+- `-a`, `--arch <ARCHITECTURE>`: Architecture for single extension download (e.g., 'linux_x64', 'darwin_arm64').
 - `--no-cache`: Force re-download even if the extension file already exists.
 - `--proxy <PROXY>`: Proxy URL to use for HTTP requests.
+- `--serial-download`: Download extensions serially instead of in parallel.
 - `-v`, `--verbose`: Enable verbose output for detailed logging.
 - `-h`, `--help`: Print help information.
 
@@ -55,6 +60,18 @@ vsixHarvester \
   --destination ./your/path/to/extensions \
   --no-cache \
   --verbose
+```
+
+Direct download of a single extension:
+
+```sh
+vsixHarvester --download golang.Go --destination ./extensions
+```
+
+Direct download with specific architecture:
+
+```sh
+vsixHarvester -D ms-python.python -a linux_x64 -d ./extensions
 ```
 
 ##### Architecture options
