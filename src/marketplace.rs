@@ -1,10 +1,11 @@
-use crate::error::VsixHarvesterError;
 use crate::config::{API_URL, MARKETPLACE_API_VERSION, MARKETPLACE_URL, USER_AGENT};
-use crate::extension::Extension;
-use std::path::Path;
-use std::fs;
 use crate::error::Result;
+use crate::error::VsixHarvesterError;
+use crate::extension::Extension;
+use log::{debug, error, info};
 use serde_json::json;
+use std::fs;
+use std::path::Path;
 
 /// Downloads a VSCode extension by its identifier
 ///
@@ -25,45 +26,34 @@ pub async fn download_extension(
     destination: &str,
     no_cache: bool,
     proxy: Option<&str>,
-    verbose: bool,
     os_arch: Option<&str>,
 ) -> Result<()> {
-    if verbose {
-        println!("Progress in extension: {}", extension.to_id());
-    }
+    info!("Progress in extension: {}", extension.to_id());
 
     // Get latest version
-    let version = get_extension_version(extension.clone(), proxy, verbose).await?;
-    if verbose {
-        println!("Latest version of {}: {}", extension.to_id(), version);
-    }
+    let version = get_extension_version(extension.clone(), proxy).await?;
+    info!("Latest version of {}: {}", extension.to_id(), version);
 
     let (download_url, file_path) =
         build_download_url_and_file_path(extension.clone(), &version, destination, os_arch);
 
-    if verbose {
-        println!("Download URL: {}", download_url);
-    }
+    debug!("Download URL: {}", download_url);
 
     // Make file path
 
     // Check file already exists
     if !no_cache && Path::new(&file_path).exists() {
-        if verbose {
-            println!(
-                "Skip download: File is already exists. File Name {}.",
-                file_path
-            );
-        }
+        info!(
+            "Skip download: File is already exists. File Name {}.",
+            file_path
+        );
         return Ok(());
     }
 
     // Create http client
     let client_builder = reqwest::Client::builder();
     let client = if let Some(proxy_url) = proxy {
-        if verbose {
-            println!("Using proxy: {}", proxy_url);
-        }
+        info!("Using proxy: {}", proxy_url);
         let proxy = reqwest::Proxy::all(proxy_url)?;
         client_builder.gzip(true).proxy(proxy).build()?
     } else {
@@ -71,16 +61,14 @@ pub async fn download_extension(
     };
 
     // Download VSIX file
-    if verbose {
-        println!("Download form {}", download_url);
-    }
+    info!("Download form {}", download_url);
     let resp = client
         .get(&download_url)
         .header(reqwest::header::ACCEPT_ENCODING, "gzip")
         .send()
         .await?;
     if !resp.status().is_success() {
-        eprintln!("Fail download of {}", extension.to_id());
+        error!("Fail download of {}", extension.to_id());
         return Err(VsixHarvesterError::DownloadError(extension.to_id()));
     }
 
@@ -88,9 +76,7 @@ pub async fn download_extension(
 
     // Save file
     fs::write(&file_path, &vsix_raw_content)?;
-    if verbose {
-        println!("Saved in {}", file_path);
-    }
+    info!("Saved in {}", file_path);
 
     Ok(())
 }
@@ -109,7 +95,6 @@ pub async fn download_extension(
 pub async fn get_extension_version(
     extension: Extension<'_>,
     proxy: Option<&str>,
-    verbose: bool,
 ) -> std::result::Result<String, VsixHarvesterError> {
     let api_url = API_URL;
     let payload = json!({
@@ -124,9 +109,7 @@ pub async fn get_extension_version(
     // Create http client
     let client_builder = reqwest::Client::builder();
     let client = if let Some(proxy_url) = proxy {
-        if verbose {
-            println!("Using proxy for API request: {}", proxy_url);
-        }
+        info!("Using proxy for API request: {}", proxy_url);
         let proxy = reqwest::Proxy::all(proxy_url)?;
         client_builder.proxy(proxy).build()?
     } else {
@@ -134,12 +117,10 @@ pub async fn get_extension_version(
     };
 
     // Send POST request
-    if verbose {
-        println!(
-            "Sending query for Marketplace API: {}.{}",
-            extension.publisher, extension.name
-        );
-    }
+    debug!(
+        "Sending query for Marketplace API: {}.{}",
+        extension.publisher, extension.name
+    );
     let resp = client
         .post(api_url)
         .header("Content-Type", "application/json")
@@ -153,7 +134,7 @@ pub async fn get_extension_version(
         .await?;
 
     if !resp.status().is_success() {
-        eprintln!("Failed query for Marketplace API");
+        error!("Failed query for Marketplace API");
         return Err(VsixHarvesterError::ApiError(
             "Failed query for Marketplace API".to_string(),
         ));

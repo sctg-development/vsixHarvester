@@ -49,7 +49,7 @@ fn test_get_extension_version() {
     };
     let version = tokio::runtime::Runtime::new()
         .unwrap()
-        .block_on(get_extension_version(ext, None, false))
+        .block_on(get_extension_version(ext, None))
         .unwrap();
     assert!(!version.is_empty());
 }
@@ -89,7 +89,6 @@ fn test_download_extension_without_arch() {
             destination,
             false,
             None,
-            false,
             None,
         ));
     assert!(result.is_ok());
@@ -111,7 +110,6 @@ fn test_download_extension_with_arch() {
             destination,
             false,
             None,
-            false,
             Some("linux-x64"),
         ));
     assert!(result.is_ok());

@@ -15,6 +15,8 @@ use error::{Result, VsixHarvesterError};
 use futures::stream::{self, StreamExt};
 use marketplace::download_extension;
 
+use env_logger;
+use log::{error, info};
 use std::fs;
 use std::path::Path;
 use tokio;
@@ -38,8 +40,6 @@ pub(crate) fn create_directory_if_not_exists(path: &str) -> Result<()> {
     Ok(())
 }
 
-
-
 /// Process extensions based on the provided arguments
 ///
 /// # Arguments
@@ -55,9 +55,7 @@ pub(crate) async fn process_extensions(args: &Args) -> Result<()> {
     // Handle direct extension download if specified
     if let Some(str_extension) = &args.download {
         let extension = Extension::from_id(str_extension)?;
-        if args.verbose {
-            println!("Direct download mode for extension: {}", extension.to_id());
-        }
+        info!("Direct download mode for extension: {}", extension.to_id());
         // Map architecture to target platform
         let target_platform = args
             .arch
@@ -65,10 +63,10 @@ pub(crate) async fn process_extensions(args: &Args) -> Result<()> {
             .and_then(Architecture::from_cli_arg)
             .and_then(|arch| arch.to_target_platform());
 
-        if args.verbose && target_platform.is_some() {
-            println!("Using architecture: {}", target_platform.unwrap());
-        } else if args.verbose {
-            println!("Using universal architecture");
+        if target_platform.is_some() {
+            info!("Using architecture: {}", target_platform.unwrap());
+        } else {
+            info!("Using universal architecture");
         }
 
         // Ensure the destination directory exists
@@ -80,12 +78,11 @@ pub(crate) async fn process_extensions(args: &Args) -> Result<()> {
             &args.destination,
             args.no_cache,
             args.proxy.as_deref(),
-            args.verbose,
             target_platform,
         )
         .await
         {
-            eprintln!("Error occurred when downloading {}: {}", str_extension, e);
+            error!("Error occurred when downloading {}: {}", str_extension, e);
             return Err(e);
         }
 
@@ -93,20 +90,18 @@ pub(crate) async fn process_extensions(args: &Args) -> Result<()> {
     }
 
     // Read extensions.json
-    if args.verbose {
-        println!("Attempting to read file: {}", &args.input);
-    }
+    info!("Attempting to read file: {}", &args.input);
     let file_content = match fs::read_to_string(&args.input) {
         Ok(content) => content,
         Err(e) => {
-            eprintln!("Failed to read file {}: {}", &args.input, e);
+            error!("Failed to read file {}: {}", &args.input, e);
             return Err(VsixHarvesterError::IoError(e));
         }
     };
     let extensions: Extensions = match serde_json::from_str(&file_content) {
         Ok(extensions) => extensions,
         Err(e) => {
-            eprintln!("Failed to parse file {}: {}", &args.input, e);
+            error!("Failed to parse file {}: {}", &args.input, e);
             return Err(VsixHarvesterError::JsonError(e));
         }
     };
@@ -127,15 +122,12 @@ pub(crate) async fn process_extensions(args: &Args) -> Result<()> {
             let mut tasks = Vec::new();
             for str_extension in ext_list {
                 let extension = Extension::from_id(str_extension)?;
-                if args.verbose {
-                    println!("Attempting to download extension: {}", extension.to_id());
-                }
+                info!("Attempting to download extension: {}", extension.to_id());
                 let task = download_extension(
                     extension.clone(),
                     &args.destination,
                     args.no_cache,
                     args.proxy.as_deref(),
-                    args.verbose,
                     target_platform,
                 );
                 tasks.push(task);
@@ -148,7 +140,7 @@ pub(crate) async fn process_extensions(args: &Args) -> Result<()> {
             let mut stream = stream::iter(tasks).buffer_unordered(concurrent_downloads);
             while let Some(result) = stream.next().await {
                 if let Err(e) = result {
-                    eprintln!("Error occurred when downloading: {}", e);
+                    error!("Error occurred when downloading: {}", e);
                 }
             }
         }
@@ -160,5 +152,12 @@ pub(crate) async fn process_extensions(args: &Args) -> Result<()> {
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
+    if args.verbose {
+        // set log level to info if verbose flag is set and RUST_LOG is not already set
+        if std::env::var("RUST_LOG").is_err() {
+            std::env::set_var("RUST_LOG", "info");
+        }
+    }
+    env_logger::init();
     process_extensions(&args).await
 }

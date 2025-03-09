@@ -17,12 +17,12 @@ This is an adaptation of the original [vsixHarvester](https://github.com/ShortAr
 
 ### Binaries
 
-- [Windows](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.4/vsixHarvester_windows_amd64_0.2.4.exe)
-- [macOS AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.4/vsixHarvester_macos_amd64_0.2.4)
-- [macOS ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.4/vsixHarvester_macos_arm64_0.2.4)
-- [Linux static AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.4/vsixHarvester_linux_amd64_static_0.2.4)
-- [Linux static ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.4/vsixHarvester_linux_arm64_static_0.2.4)
-- [Linux static ARM32](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.4/vsixHarvester_linux_armhf_static_0.2.4)
+- [Windows](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.5/vsixHarvester_windows_amd64_0.2.5.exe)
+- [macOS AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.5/vsixHarvester_macos_amd64_0.2.5)
+- [macOS ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.5/vsixHarvester_macos_arm64_0.2.5)
+- [Linux static AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.5/vsixHarvester_linux_amd64_static_0.2.5)
+- [Linux static ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.5/vsixHarvester_linux_arm64_static_0.2.5)
+- [Linux static ARM32](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.5/vsixHarvester_linux_armhf_static_0.2.5)
   
 ### Prerequisites
 
@@ -59,12 +59,16 @@ Alternatively, you can set the following environment variables:
 - EXTENSIONS_FILE (default: `./extensions.json`)
 - OUTPUT_DIR (default: `./extensions`)
 - PROXY (default: none)
-- VERBOSE (default: false)
+- VERBOSE (default: false) - sets the log level to `info`
 - DOWNLOAD (default: none)
 - ARCH (default: none)
 - SERIAL_DOWNLOAD (default: false)
 - NO_CACHE (default: false)
   
+#### Logging
+
+The program use `env_logger` for logging. You can set the `RUST_LOG` environment variable to control the log level.
+
 #### Example
 
 ```sh
