@@ -52,6 +52,19 @@ vsixHarvester [OPTIONS]
 - `-v`, `--verbose`: Enable verbose output for detailed logging.
 - `-h`, `--help`: Print help information.
 
+#### Environment Variables
+
+Alternatively, you can set the following environment variables:
+
+- EXTENSIONS_FILE (default: `./extensions.json`)
+- OUTPUT_DIR (default: `./extensions`)
+- PROXY (default: none)
+- VERBOSE (default: false)
+- DOWNLOAD (default: none)
+- ARCH (default: none)
+- SERIAL_DOWNLOAD (default: false)
+- NO_CACHE (default: false)
+  
 #### Example
 
 ```sh
