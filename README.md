@@ -17,12 +17,12 @@ This is an adaptation of the original [vsixHarvester](https://github.com/ShortAr
 
 ### Binaries
 
-- [Windows](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.3/vsixHarvester_windows_amd64_0.2.3.exe)
-- [macOS AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.3/vsixHarvester_macos_amd64_0.2.3)
-- [macOS ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.3/vsixHarvester_macos_arm64_0.2.3)
-- [Linux static AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.3/vsixHarvester_linux_amd64_static_0.2.3)
-- [Linux static ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.3/vsixHarvester_linux_arm64_static_0.2.3)
-- [Linux static ARM32](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.3/vsixHarvester_linux_armhf_static_0.2.3)
+- [Windows](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.4/vsixHarvester_windows_amd64_0.2.4.exe)
+- [macOS AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.4/vsixHarvester_macos_amd64_0.2.4)
+- [macOS ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.4/vsixHarvester_macos_arm64_0.2.4)
+- [Linux static AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.4/vsixHarvester_linux_amd64_static_0.2.4)
+- [Linux static ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.4/vsixHarvester_linux_arm64_static_0.2.4)
+- [Linux static ARM32](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.4/vsixHarvester_linux_armhf_static_0.2.4)
   
 ### Prerequisites
 
