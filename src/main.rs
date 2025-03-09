@@ -480,4 +480,76 @@ mod tests {
         let result = Extension::from_id("invalid");
         assert!(result.is_err());
     }
+
+    #[test]
+    fn test_extension_to_id() {
+        let ext = Extension {
+            publisher: "publisher",
+            name: "name",
+        };
+        assert_eq!(ext.to_id(), "publisher.name");
+    }
+
+    #[test]
+    fn test_build_download_url_and_file_path() {
+        let ext = Extension {
+            publisher: "publisher",
+            name: "name",
+        };
+        let version = "1.0.0";
+        let destination = "./extensions";
+        let (download_url, file_path) = build_download_url_and_file_path(ext, version, destination, None);
+        assert_eq!(download_url, "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/publisher/vsextensions/name/1.0.0/vspackage");
+        assert_eq!(file_path, "./extensions/publisher.name-1.0.0.vsix");
+    }
+
+    #[test]
+    fn test_get_extension_version() {
+        let ext = Extension {
+            publisher: "golang",
+            name: "Go",
+        };
+        let version = tokio::runtime::Runtime::new().unwrap().block_on(get_extension_version(ext, None, false)).unwrap();
+        assert!(!version.is_empty());
+    }
+
+    #[test]
+    fn test_create_directory_if_not_exists() {
+        let result = create_directory_if_not_exists("./testdir");
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_create_directory_if_not_exists_already_exists() {
+        let result = create_directory_if_not_exists("./src");
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_create_directory_if_not_exists_invalid_path() {
+        let result = create_directory_if_not_exists("/invalid/path");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_download_extension_without_arch() {
+        let ext = Extension {
+            publisher: "golang",
+            name: "Go",
+        };
+        let destination = "./testdir";
+        let result = tokio::runtime::Runtime::new().unwrap().block_on(download_extension(ext, destination, false, None, false, None));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_download_extension_with_arch() {
+        let ext = Extension {
+            publisher: "ms-python",
+            name: "python",
+        };
+        let destination = "./testdir";
+        let result = tokio::runtime::Runtime::new().unwrap().block_on(download_extension(ext, destination, false, None, false, Some("linux-x64")));
+        assert!(result.is_ok());
+    }
 }
