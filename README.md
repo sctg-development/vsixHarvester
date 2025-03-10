@@ -47,7 +47,7 @@ vsixHarvester [OPTIONS]
 - `-d`, `--destination <DESTINATION>`: Destination folder to save the VSIX files. Default is `./extensions`.
 - `-D`, `--download <EXTENSION>`: Download a single extension (e.g., 'golang.Go') without using extensions.json.
 - `-a`, `--arch <ARCHITECTURE>`: Architecture for single extension download (e.g., 'linux_x64', 'darwin_arm64').
-- `e`, `--engine-version <ENGINE_VERSION`: Engine version to be compatible with
+- `-e`, `--engine-version <ENGINE_VERSION`: Engine version to be compatible with
 - `--no-cache`: Force re-download even if the extension file already exists.
 - `--proxy <PROXY>`: Proxy URL to use for HTTP requests.
 - `--serial-download`: Download extensions serially instead of in parallel.
