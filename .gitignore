@@ -2,3 +2,4 @@
 .vscode/extensions
 extensions/
 testdir/
+.DS_Store
