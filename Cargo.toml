@@ -1,6 +1,6 @@
 [package]
 name = "vsixHarvester"
-version = "0.2.5"
+version = "0.2.6"
 edition = "2021"
 authors = ["bamboogeneral@shortarrow.jp","Ronan Le Meillat"]
 description = "A CLI tool to download VSCode extensions from extensions.json"
@@ -21,6 +21,7 @@ thiserror = "2.0"
 futures = "0.3"
 log = "0.4"
 env_logger = "0.11"
+bitflags = "2.9.0"
 
 [dev-dependencies]
 tempfile = "3"

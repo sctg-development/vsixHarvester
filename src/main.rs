@@ -4,6 +4,7 @@ mod config;
 mod error;
 mod extension;
 mod marketplace;
+mod types;
 #[cfg(test)]
 mod tests;
 
@@ -95,6 +96,7 @@ async fn download_single_extension(extension: Extension<'_>, args: &Args) -> Res
         args.no_cache,
         args.proxy.as_deref(),
         target_platform,
+        args.engine_version.as_deref()
     )
     .await
     {
@@ -159,6 +161,7 @@ async fn download_extensions_from_json(args: &Args) -> Result<()> {
                     args.no_cache,
                     args.proxy.as_deref(),
                     target_platform,
+                    args.engine_version.as_deref()
                 );
                 tasks.push(task);
             }

@@ -26,6 +26,24 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug executable 'vsixHarvester using extensions.json and engine 1.97.2'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=vsixHarvester",
+                    "--package=vsixHarvester"
+                ],
+                "filter": {
+                    "name": "vsixHarvester",
+                    "kind": "bin"
+                }
+            },
+            "args": ["-i", "extensions.json", "-e", "1.97.2"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug executable 'vsixHarvester using single extension'",
             "cargo": {
                 "args": [
@@ -38,7 +56,7 @@
                     "kind": "bin"
                 }
             },
-            "args": ["-D", "golang.Go"],
+            "args": ["-D", "GitHub.copilot"],
             "cwd": "${workspaceFolder}"
         },
         {

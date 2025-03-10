@@ -1,0 +1,37 @@
+[2025-03-10T08:37:12Z INFO  vsixHarvester] Attempting to read file: test.json
+[2025-03-10T08:37:12Z INFO  vsixHarvester] Attempting to download extension: golang.Go
+[2025-03-10T08:37:12Z INFO  vsixHarvester::marketplace] Progress in extension: golang.Go
+[2025-03-10T08:37:12Z DEBUG vsixHarvester::marketplace] Using search payload: {"filters":[{"criteria":[{"filterType":7,"value":"golang.Go"}]}],"flags":19}
+[2025-03-10T08:37:12Z DEBUG vsixHarvester::marketplace] Sending query for Marketplace API: golang.Go
+[2025-03-10T08:37:12Z DEBUG reqwest::connect] starting new connection: https://marketplace.visualstudio.com/
+[2025-03-10T08:37:13Z DEBUG vsixHarvester::marketplace] Got 198 version results
+[2025-03-10T08:37:13Z DEBUG vsixHarvester::marketplace] Could not find compatible version, using latest
+[2025-03-10T08:37:13Z INFO  vsixHarvester::marketplace] Latest version of golang.Go: 0.47.1
+[2025-03-10T08:37:13Z DEBUG vsixHarvester::marketplace] Download URL: https://marketplace.visualstudio.com/_apis/public/gallery/publishers/golang/vsextensions/Go/0.47.1/vspackage
+[2025-03-10T08:37:13Z INFO  vsixHarvester::marketplace] Download form https://marketplace.visualstudio.com/_apis/public/gallery/publishers/golang/vsextensions/Go/0.47.1/vspackage
+[2025-03-10T08:37:13Z DEBUG reqwest::connect] starting new connection: https://marketplace.visualstudio.com/
+[2025-03-10T08:37:13Z INFO  vsixHarvester::marketplace] Saved in ././extensions/golang.Go-0.47.1.vsix
+[2025-03-10T08:37:13Z INFO  vsixHarvester] Attempting to download extension: ms-python.python
+[2025-03-10T08:37:13Z INFO  vsixHarvester::marketplace] Progress in extension: ms-python.python
+[2025-03-10T08:37:13Z DEBUG vsixHarvester::marketplace] Using search payload: {"filters":[{"criteria":[{"filterType":7,"value":"ms-python.python"}]}],"flags":19}
+[2025-03-10T08:37:13Z DEBUG vsixHarvester::marketplace] Sending query for Marketplace API: ms-python.python
+[2025-03-10T08:37:13Z DEBUG reqwest::connect] starting new connection: https://marketplace.visualstudio.com/
+[2025-03-10T08:37:14Z DEBUG vsixHarvester::marketplace] Got 2143 version results
+[2025-03-10T08:37:14Z DEBUG vsixHarvester::marketplace] Could not find compatible version, using latest
+[2025-03-10T08:37:14Z INFO  vsixHarvester::marketplace] Latest version of ms-python.python: 2025.3.2025030601
+[2025-03-10T08:37:14Z DEBUG vsixHarvester::marketplace] Download URL: https://marketplace.visualstudio.com/_apis/public/gallery/publishers/ms-python/vsextensions/python/2025.3.2025030601/vspackage?targetPlatform=linux-x64
+[2025-03-10T08:37:14Z INFO  vsixHarvester::marketplace] Download form https://marketplace.visualstudio.com/_apis/public/gallery/publishers/ms-python/vsextensions/python/2025.3.2025030601/vspackage?targetPlatform=linux-x64
+[2025-03-10T08:37:14Z DEBUG reqwest::connect] starting new connection: https://marketplace.visualstudio.com/
+[2025-03-10T08:37:17Z INFO  vsixHarvester::marketplace] Saved in ././extensions/ms-python.python-2025.3.2025030601@linux-x64.vsix
+[2025-03-10T08:37:17Z INFO  vsixHarvester] Attempting to download extension: rust-lang.rust-analyzer
+[2025-03-10T08:37:17Z INFO  vsixHarvester::marketplace] Progress in extension: rust-lang.rust-analyzer
+[2025-03-10T08:37:17Z DEBUG vsixHarvester::marketplace] Using search payload: {"filters":[{"criteria":[{"filterType":7,"value":"rust-lang.rust-analyzer"}]}],"flags":19}
+[2025-03-10T08:37:17Z DEBUG vsixHarvester::marketplace] Sending query for Marketplace API: rust-lang.rust-analyzer
+[2025-03-10T08:37:17Z DEBUG reqwest::connect] starting new connection: https://marketplace.visualstudio.com/
+[2025-03-10T08:37:18Z DEBUG vsixHarvester::marketplace] Got 11012 version results
+[2025-03-10T08:37:18Z DEBUG vsixHarvester::marketplace] Could not find compatible version, using latest
+[2025-03-10T08:37:18Z INFO  vsixHarvester::marketplace] Latest version of rust-lang.rust-analyzer: 0.4.2336
+[2025-03-10T08:37:18Z DEBUG vsixHarvester::marketplace] Download URL: https://marketplace.visualstudio.com/_apis/public/gallery/publishers/rust-lang/vsextensions/rust-analyzer/0.4.2336/vspackage?targetPlatform=linux-arm64
+[2025-03-10T08:37:18Z INFO  vsixHarvester::marketplace] Download form https://marketplace.visualstudio.com/_apis/public/gallery/publishers/rust-lang/vsextensions/rust-analyzer/0.4.2336/vspackage?targetPlatform=linux-arm64
+[2025-03-10T08:37:18Z DEBUG reqwest::connect] starting new connection: https://marketplace.visualstudio.com/
+[2025-03-10T08:37:22Z INFO  vsixHarvester::marketplace] Saved in ././extensions/rust-lang.rust-analyzer-0.4.2336@linux-arm64.vsix

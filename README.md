@@ -14,15 +14,16 @@ This is an adaptation of the original [vsixHarvester](https://github.com/ShortAr
 - Provides verbose output for detailed logging.
 - Direct download of a single extension without using extensions.json file.
 - Parrallel download of extensions.
+- Get latest version for a specific engine
 
 ### Binaries
 
-- [Windows](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.5/vsixHarvester_windows_amd64_0.2.5.exe)
-- [macOS AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.5/vsixHarvester_macos_amd64_0.2.5)
-- [macOS ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.5/vsixHarvester_macos_arm64_0.2.5)
-- [Linux static AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.5/vsixHarvester_linux_amd64_static_0.2.5)
-- [Linux static ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.5/vsixHarvester_linux_arm64_static_0.2.5)
-- [Linux static ARM32](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.5/vsixHarvester_linux_armhf_static_0.2.5)
+- [Windows](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.6/vsixHarvester_windows_amd64_0.2.5.exe)
+- [macOS AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.6/vsixHarvester_macos_amd64_0.2.5)
+- [macOS ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.6/vsixHarvester_macos_arm64_0.2.5)
+- [Linux static AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.6/vsixHarvester_linux_amd64_static_0.2.5)
+- [Linux static ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.6/vsixHarvester_linux_arm64_static_0.2.5)
+- [Linux static ARM32](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.6/vsixHarvester_linux_armhf_static_0.2.5)
   
 ### Prerequisites
 
@@ -46,6 +47,7 @@ vsixHarvester [OPTIONS]
 - `-d`, `--destination <DESTINATION>`: Destination folder to save the VSIX files. Default is `./extensions`.
 - `-D`, `--download <EXTENSION>`: Download a single extension (e.g., 'golang.Go') without using extensions.json.
 - `-a`, `--arch <ARCHITECTURE>`: Architecture for single extension download (e.g., 'linux_x64', 'darwin_arm64').
+- `e`, `--engine-version <ENGINE_VERSION`: Engine version to be compatible with
 - `--no-cache`: Force re-download even if the extension file already exists.
 - `--proxy <PROXY>`: Proxy URL to use for HTTP requests.
 - `--serial-download`: Download extensions serially instead of in parallel.
@@ -59,6 +61,7 @@ Alternatively, you can set the following environment variables:
 - EXTENSIONS_FILE (default: `./extensions.json`)
 - OUTPUT_DIR (default: `./extensions`)
 - PROXY (default: none)
+- ENGINE_VERSION (default: none)
 - VERBOSE (default: false) - sets the log level to `info`
 - DOWNLOAD (default: none)
 - ARCH (default: none)

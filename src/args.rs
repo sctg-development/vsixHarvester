@@ -37,6 +37,10 @@ pub struct Args {
     #[arg(short, long, env = "ARCH")]
     pub arch: Option<String>,
 
+    /// Engine version to be compatible with
+    #[arg(short, long, env)]
+    pub engine_version: Option<String>,
+
     /// Disable parallel downloads
     #[arg(
         long = "serial-download",

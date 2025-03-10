@@ -1,0 +1,11 @@
+{
+    "universal": [
+        "golang.Go"
+    ],
+    "linux_arm64": [
+        "rust-lang.rust-analyzer"
+    ],
+    "linux_x64": [
+        "ms-python.python"
+    ]
+}

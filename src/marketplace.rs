@@ -2,11 +2,86 @@ use crate::config::{API_URL, MARKETPLACE_API_VERSION, MARKETPLACE_URL, USER_AGEN
 use crate::error::Result;
 use crate::error::VsixHarvesterError;
 use crate::extension::Extension;
+use crate::types::MarketplaceResponse;
 use log::{debug, error, info};
 use serde_json::json;
 use std::fs;
 use std::path::Path;
 
+use bitflags::bitflags;
+
+bitflags! {
+    /// Flags that control what data is included in the marketplace API response
+    pub struct Flags: u32 {
+        /// None is used to retrieve only the basic extension details.
+        const NONE = 0x0;
+
+        /// IncludeVersions will return version information for extensions returned
+        const INCLUDE_VERSIONS = 0x1;
+
+        /// IncludeFiles will return information about which files were found
+        /// within the extension that were stored independent of the manifest.
+        /// When asking for files, versions will be included as well since files
+        /// are returned as a property of the versions.
+        /// These files can be retrieved using the path to the file without
+        /// requiring the entire manifest be downloaded.
+        const INCLUDE_FILES = 0x2;
+
+        /// Include the Categories and Tags that were added to the extension definition.
+        const INCLUDE_CATEGORY_AND_TAGS = 0x4;
+
+        /// Include the details about which accounts the extension has been shared
+        /// with if the extension is a private extension.
+        const INCLUDE_SHARED_ACCOUNTS = 0x8;
+
+        /// Include properties associated with versions of the extension
+        const INCLUDE_VERSION_PROPERTIES = 0x10;
+
+        /// Excluding non-validated extensions will remove any extension versions that
+        /// either are in the process of being validated or have failed validation.
+        const EXCLUDE_NON_VALIDATED = 0x20;
+
+        /// Include the set of installation targets the extension has requested.
+        const INCLUDE_INSTALLATION_TARGETS = 0x40;
+
+        /// Include the base uri for assets of this extension
+        const INCLUDE_ASSET_URI = 0x80;
+
+        /// Include the statistics associated with this extension
+        const INCLUDE_STATISTICS = 0x100;
+
+        /// When retrieving versions from a query, only include the latest
+        /// version of the extensions that matched. This is useful when the
+        /// caller doesn't need all the published versions. It will save a
+        /// significant size in the returned payload.
+        const INCLUDE_LATEST_VERSION_ONLY = 0x200;
+
+        /// The Unpublished extension flag indicates that the extension can't be installed/downloaded.
+        /// Users who have installed such an extension can continue to use the extension.
+        const UNPUBLISHED = 0x1000;
+
+        /// Include the details if an extension is in conflict list or not
+        const INCLUDE_NAME_CONFLICT_INFO = 0x8000;
+    }
+}
+
+impl Flags {
+    /// Creates the standard flags combination used for extension downloads
+    pub fn standard() -> Self {
+        // 914 (decimal) = 0x392 (hex) =
+        // INCLUDE_VERSIONS | INCLUDE_FILES | INCLUDE_ASSET_URI | INCLUDE_STATISTICS | INCLUDE_LATEST_VERSION_ONLY
+        // 0x1 | 0x2 | 0x80 | 0x100 | 0x200 = 0x392 (914)
+        Flags::INCLUDE_VERSIONS
+            | Flags::INCLUDE_FILES
+            | Flags::INCLUDE_ASSET_URI
+            | Flags::INCLUDE_STATISTICS
+            | Flags::INCLUDE_LATEST_VERSION_ONLY
+            | Flags::INCLUDE_VERSION_PROPERTIES
+    }
+    pub fn all_versions() -> Self {
+        Flags::INCLUDE_VERSIONS | Flags::INCLUDE_FILES | Flags::INCLUDE_VERSION_PROPERTIES
+    }
+}
 /// Downloads a VSCode extension by its identifier
 ///
 /// # Arguments
@@ -17,6 +92,7 @@ use std::path::Path;
 /// * `proxy` - Optional proxy URL
 /// * `verbose` - Whether to print verbose output
 /// * `os_arch` - Optional target platform
+/// * `engine_version` - Optional, the engine to be compatible with
 ///
 /// # Returns
 ///
@@ -27,11 +103,12 @@ pub async fn download_extension(
     no_cache: bool,
     proxy: Option<&str>,
     os_arch: Option<&str>,
+    engine_version: Option<&str>,
 ) -> Result<()> {
     info!("Progress in extension: {}", extension.to_id());
 
     // Get latest version
-    let version = get_extension_version(extension.clone(), proxy).await?;
+    let version = get_extension_version(extension.clone(), proxy, engine_version).await?;
     info!("Latest version of {}: {}", extension.to_id(), version);
 
     let (download_url, file_path) =
@@ -87,6 +164,7 @@ pub async fn download_extension(
 ///
 /// * `extension` - The extension to get the version of
 /// * `proxy` - Optional proxy URL
+/// * `engine_version` - Optional engine version to filter by compatibility
 /// * `verbose` - Whether to print verbose output
 ///
 /// # Returns
@@ -95,16 +173,24 @@ pub async fn download_extension(
 pub async fn get_extension_version(
     extension: Extension<'_>,
     proxy: Option<&str>,
+    engine_version: Option<&str>,
 ) -> std::result::Result<String, VsixHarvesterError> {
     let api_url = API_URL;
+
+    let (flags, str_engine_version) = if engine_version.is_some() {
+        (Flags::all_versions().bits(), engine_version.unwrap())
+    } else {
+        (Flags::standard().bits(), "")
+    };
     let payload = json!({
         "filters": [{
             "criteria": [
                 {"filterType": 7, "value": format!("{}.{}", extension.publisher, extension.name)}
             ]
         }],
-        "flags": 914
+        "flags": flags
     });
+    debug!("Using search payload: {}", payload);
 
     // Create http client
     let client_builder = reqwest::Client::builder();
@@ -132,7 +218,6 @@ pub async fn get_extension_version(
         .json(&payload)
         .send()
         .await?;
-
     if !resp.status().is_success() {
         error!("Failed query for Marketplace API");
         return Err(VsixHarvesterError::ApiError(
@@ -140,13 +225,51 @@ pub async fn get_extension_version(
         ));
     }
 
-    let resp_json: serde_json::Value = resp.json().await?;
+    let json_body = resp.text().await?;
+
+    let resp_json_result: std::result::Result<MarketplaceResponse, serde_json::Error> =
+        serde_json::from_str(json_body.as_str());
+    if resp_json_result.is_err() {
+        error!("Failed to parse JSON response");
+        debug!("JSON was:\n{}", json_body.as_str());
+        return Err(VsixHarvesterError::JsonError(
+            resp_json_result.err().unwrap(),
+        ));
+    }
+    let resp_json = resp_json_result.unwrap();
+    debug!(
+        "Got {} version results",
+        resp_json.results[0].extensions[0].versions.len()
+    );
+
+    let versions = if engine_version.is_some() {
+        resp_json.results[0].extensions[0].get_compatible_versions(str_engine_version)
+    } else {
+        resp_json.results[0].extensions[0].versions.iter().collect()
+    };
 
     // Extract version
-    let version = resp_json["results"][0]["extensions"][0]["versions"][0]["version"]
-        .as_str()
-        .ok_or_else(|| VsixHarvesterError::ApiError("Failed to get extension version".to_string()))?
-        .to_string();
+    let version = if engine_version.is_some() && !versions.is_empty() {
+        debug!(
+            "Got {} version compatible with engine {}",
+            versions.len(),
+            str_engine_version
+        );
+        for version in versions.iter() {
+            debug!(
+                "Version: {} Engine: {}",
+                version.version,
+                version
+                    .get_vscode_engine_version()
+                    .unwrap_or("None".to_string())
+            );
+        }
+        versions[0].version.clone()
+    } else {
+        debug!("Could not find compatible version, using latest");
+        resp_json.results[0].extensions[0].versions[0].version.clone()
+    };
+    
 
     Ok(version)
 }
