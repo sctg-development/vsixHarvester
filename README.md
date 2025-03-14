@@ -3,7 +3,9 @@
 ## VSCode Extension Downloader in Rust
 
 This Rust program reads the different arrays from an `extensions.json` file and downloads the corresponding VSIX packages for Visual Studio Code extensions.  
-This is an adaptation of the original [vsixHarvester](https://github.com/ShortArrow/vsixHarvester), it does not use the Visual Studio Code `extensions.json` file, but a custom one. The custom `extensions.json` file allows to specify the architecture for each extension.
+This is an adaptation of the original [vsixHarvester](https://github.com/ShortArrow/vsixHarvester), it does not use the Visual Studio Code `extensions.json` file, but a custom one. The custom `extensions.json` file allows to specify the architecture for each extension.  
+
+The custom extensions.json is designed for use in our [hcf-coder](https://github.com/highcanfly-club/hcf-coder), a modified version of **codercom/code-server**. During the `Dockerfile` build process, all necessary *Visual Studio Code* extensions are automatically downloaded at the latest version compatible with the embedded code engine.
 
 ### Features
 
