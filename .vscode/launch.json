@@ -26,7 +26,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'vsixHarvester using extensions.json and engine 1.97.2'",
+            "name": "Debug executable 'vsixHarvester using extensions.json and engine 1.100.2'",
             "cargo": {
                 "args": [
                     "build",
@@ -38,7 +38,7 @@
                     "kind": "bin"
                 }
             },
-            "args": ["-i", "extensions.json", "-e", "1.97.2"],
+            "args": ["-i", "extensions.json", "-e", "1.100.2"],
             "cwd": "${workspaceFolder}"
         },
         {

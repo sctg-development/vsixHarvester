@@ -1,3 +1,4 @@
+use log::debug;
 use serde::{Deserialize, Serialize};
 
 /// Response from the VS Code marketplace API
@@ -139,6 +140,22 @@ impl Extension {
             })
             .collect()
     }
+
+    /// Gets only the non prerelease versions
+    ///
+    /// # Returns
+    ///
+    /// A vector of references to non prerelease versions
+    pub fn get_non_prerelease_versions<'a>(&'a self) -> Vec<&'a Version> {
+        self.versions
+            .iter()
+            .filter(|version| {
+                version
+                    .get_vscode_prerelease()
+                    .map_or(false, |req| req.is_empty() || req != "true")
+            })
+            .collect()
+    }
 }
 
 impl Version {
@@ -152,9 +169,20 @@ impl Version {
     }
     /// Filter all the properties to get the one with the key "Microsoft.VisualStudio.Code.Engine"
     pub fn get_vscode_engine_version(&self) -> Option<String> {
-        self.properties.clone().unwrap_or_default()
+        self.properties
+            .clone()
+            .unwrap_or_default()
             .iter()
             .find(|property| property.key == "Microsoft.VisualStudio.Code.Engine")
+            .map(|property| property.value.clone())
+    }
+    /// Filter all the properties to get one with the key "Microsoft.VisualStudio.Code.PreRelease"
+    pub fn get_vscode_prerelease(&self) -> Option<String> {
+        self.properties
+            .clone()
+            .unwrap_or_default()
+            .iter()
+            .find(|property| property.key == "Microsoft.VisualStudio.Code.PreRelease")
             .map(|property| property.value.clone())
     }
 }
@@ -327,7 +355,7 @@ mod tests {
         let vsix_url = extension.get_latest_vsix_url().unwrap();
         assert!(vsix_url.contains("Microsoft.VisualStudio.Services.VSIXPackage"));
     }
-    
+
     #[cfg(test)]
     #[test]
     fn test_get_compatible_versions() {
@@ -362,7 +390,8 @@ mod tests {
             properties: vec![Property {
                 key: "Microsoft.VisualStudio.Code.Engine".to_string(),
                 value: "^1.97.0".to_string(),
-            }].into(),
+            }]
+            .into(),
             asset_uri: "".to_string(),
             fallback_asset_uri: "".to_string(),
         });
@@ -375,7 +404,8 @@ mod tests {
             properties: vec![Property {
                 key: "Microsoft.VisualStudio.Code.Engine".to_string(),
                 value: "^1.98.0".to_string(),
-            }].into(),
+            }]
+            .into(),
             asset_uri: "".to_string(),
             fallback_asset_uri: "".to_string(),
         });
@@ -388,7 +418,8 @@ mod tests {
             properties: vec![Property {
                 key: "Microsoft.VisualStudio.Code.Engine".to_string(),
                 value: "^1.97.0".to_string(),
-            }].into(),
+            }]
+            .into(),
             asset_uri: "".to_string(),
             fallback_asset_uri: "".to_string(),
         });

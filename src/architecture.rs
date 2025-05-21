@@ -1,7 +1,7 @@
-use std::fmt;
-use std::str::FromStr;
 use crate::error::VsixHarvesterError;
 use crate::Extensions;
+use std::fmt;
+use std::str::FromStr;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Architecture {
@@ -59,7 +59,7 @@ impl Architecture {
         vec![
             Self::Universal,
             Self::LinuxX64,
-            Self::LinuxArm64, 
+            Self::LinuxArm64,
             Self::DarwinX64,
             Self::DarwinArm64,
             Self::Win32X64,
@@ -85,16 +85,19 @@ impl Architecture {
     }
 
     /// Get extensions list for a specific platform
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `platform_field` - The platform field name (e.g., "linux_x64")
     /// * `extensions` - The extensions structure
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// An Option containing a reference to the extensions list for the given platform
-    pub fn get_extensions_list<'a>(platform_field: &str, extensions: &'a Extensions) -> Option<&'a Vec<String>> {
+    pub fn get_extensions_list<'a>(
+        platform_field: &str,
+        extensions: &'a Extensions,
+    ) -> Option<&'a Vec<String>> {
         match platform_field {
             "universal" => extensions.universal.as_ref(),
             "linux_x64" => extensions.linux_x64.as_ref(),

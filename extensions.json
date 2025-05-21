@@ -1,17 +1,10 @@
 {
   "universal": [
     "GitHub.copilot",
-    "GitHub.copilot-chat",
-    "golang.Go",
-    "yzhang.markdown-all-in-one",
-    "eamodio.gitlens"
+    "GitHub.copilot-chat"
   ],
   "linux_x64":[
-    "rust-lang.rust-analyzer",
-    "ms-python.python"
   ],
   "linux_arm64":[
-    "rust-lang.rust-analyzer",
-    "ms-python.python"
   ]
 }

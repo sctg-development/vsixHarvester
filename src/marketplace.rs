@@ -4,6 +4,7 @@ use crate::error::VsixHarvesterError;
 use crate::extension::Extension;
 use crate::types::MarketplaceResponse;
 use log::{debug, error, info};
+use serde::de;
 use serde_json::json;
 use std::fs;
 use std::path::Path;
@@ -229,6 +230,12 @@ pub async fn get_extension_version(
 
     let resp_json_result: std::result::Result<MarketplaceResponse, serde_json::Error> =
         serde_json::from_str(json_body.as_str());
+    // If RUST_LOG is set to debug save the JSON response to a temporary file and display the path
+    if std::env::var("RUST_LOG").is_ok_and(|v| v == "debug") {
+        let temp_file_path = format!("./vsix_harvester_{}.json", extension.to_id());
+        fs::write(&temp_file_path, &json_body)?;
+        debug!("Saved JSON response to {}", temp_file_path);
+    }
     if resp_json_result.is_err() {
         error!("Failed to parse JSON response");
         debug!("JSON was:\n{}", json_body.as_str());
@@ -257,19 +264,23 @@ pub async fn get_extension_version(
         );
         for version in versions.iter() {
             debug!(
-                "Version: {} Engine: {}",
+                "Version: {} Engine: {} PreRelease: {}",
                 version.version,
                 version
                     .get_vscode_engine_version()
-                    .unwrap_or("None".to_string())
+                    .unwrap_or("None".to_string()),
+                version
+                    .get_vscode_prerelease()
+                    .unwrap_or("false".to_string())
             );
         }
         versions[0].version.clone()
     } else {
         debug!("Could not find compatible version, using latest");
-        resp_json.results[0].extensions[0].versions[0].version.clone()
+        resp_json.results[0].extensions[0].versions[0]
+            .version
+            .clone()
     };
-    
 
     Ok(version)
 }

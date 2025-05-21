@@ -23,4 +23,3 @@ pub enum VsixHarvesterError {
     DownloadError(String),
 }
 pub type Result<T> = std::result::Result<T, VsixHarvesterError>;
-

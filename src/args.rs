@@ -1,7 +1,5 @@
-pub use clap::Parser;
 use crate::config::{DEFAULT_FILE_NAME, DEFAULT_PATH, VERSION};
-
-
+pub use clap::Parser;
 
 #[derive(Parser)]
 #[command(
