@@ -97,6 +97,7 @@ async fn download_single_extension(extension: Extension<'_>, args: &Args) -> Res
         args.proxy.as_deref(),
         target_platform,
         args.engine_version.as_deref(),
+        args.allow_pre_release,
     )
     .await
     {
@@ -162,6 +163,7 @@ async fn download_extensions_from_json(args: &Args) -> Result<()> {
                     args.proxy.as_deref(),
                     target_platform,
                     args.engine_version.as_deref(),
+                    args.allow_pre_release,
                 );
                 tasks.push(task);
             }

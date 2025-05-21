@@ -105,11 +105,13 @@ pub async fn download_extension(
     proxy: Option<&str>,
     os_arch: Option<&str>,
     engine_version: Option<&str>,
+    allow_pre_release: bool,
 ) -> Result<()> {
     info!("Progress in extension: {}", extension.to_id());
 
     // Get latest version
-    let version = get_extension_version(extension.clone(), proxy, engine_version).await?;
+    let version =
+        get_extension_version(extension.clone(), proxy, engine_version, allow_pre_release).await?;
     info!("Latest version of {}: {}", extension.to_id(), version);
 
     let (download_url, file_path) =
@@ -175,6 +177,7 @@ pub async fn get_extension_version(
     extension: Extension<'_>,
     proxy: Option<&str>,
     engine_version: Option<&str>,
+    allow_pre_release: bool,
 ) -> std::result::Result<String, VsixHarvesterError> {
     let api_url = API_URL;
 
@@ -250,30 +253,32 @@ pub async fn get_extension_version(
     );
 
     let versions = if engine_version.is_some() {
-        resp_json.results[0].extensions[0].get_compatible_versions(str_engine_version)
+        resp_json.results[0].extensions[0]
+            .get_compatible_versions(str_engine_version, allow_pre_release)
     } else {
         resp_json.results[0].extensions[0].versions.iter().collect()
     };
 
-    // Extract version
     let version = if engine_version.is_some() && !versions.is_empty() {
+        // Debug the versions
         debug!(
             "Got {} version compatible with engine {}",
             versions.len(),
             str_engine_version
         );
-        for version in versions.iter() {
+        for current_version in versions.iter() {
             debug!(
-                "Version: {} Engine: {} PreRelease: {}",
-                version.version,
-                version
+                " - Version: {} Engine: {} PreRelease: {}",
+                current_version.version,
+                current_version
                     .get_vscode_engine_version()
                     .unwrap_or("None".to_string()),
-                version
+                current_version
                     .get_vscode_prerelease()
                     .unwrap_or("false".to_string())
             );
         }
+
         versions[0].version.clone()
     } else {
         debug!("Could not find compatible version, using latest");

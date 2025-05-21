@@ -46,4 +46,8 @@ pub struct Args {
         env = "SERIAL_DOWNLOAD"
     )]
     pub serial: bool,
+
+    /// Allow or not downloading extensions marked as "pre-release"
+    #[arg(long, default_value = "false", env = "ALLOW_PRE_RELEASE")]
+    pub allow_pre_release: bool,
 }

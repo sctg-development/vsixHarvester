@@ -1,4 +1,3 @@
-use log::debug;
 use serde::{Deserialize, Serialize};
 
 /// Response from the VS Code marketplace API
@@ -130,13 +129,28 @@ impl Extension {
     /// # Returns
     ///
     /// A vector of references to compatible versions
-    pub fn get_compatible_versions<'a>(&'a self, engine: &str) -> Vec<&'a Version> {
+    pub fn get_compatible_versions<'a>(
+        &'a self,
+        engine: &str,
+        allow_prerelease: bool,
+    ) -> Vec<&'a Version> {
         self.versions
             .iter()
             .filter(|version| {
                 version
                     .get_vscode_engine_version()
                     .map_or(false, |req| is_compatible(req.as_str(), engine))
+            })
+            .filter(|version| {
+                if allow_prerelease {
+                    true
+                } else {
+                    version
+                        .get_vscode_prerelease()
+                        .map_or(true, |property_prerelease_value| {
+                            !property_prerelease_value.contains("true")
+                        })
+                }
             })
             .collect()
     }
@@ -425,12 +439,12 @@ mod tests {
         });
 
         // Tester la fonction
-        let v197 = extension.get_compatible_versions("1.97.0");
+        let v197 = extension.get_compatible_versions("1.97.0", false);
         assert_eq!(v197.len(), 2);
         assert_eq!(v197[0].version, "1.0.0");
         assert_eq!(v197[1].version, "3.0.0");
 
-        let v198 = extension.get_compatible_versions("1.98.0");
+        let v198 = extension.get_compatible_versions("1.98.0", false);
         assert_eq!(v198.len(), 1);
         assert_eq!(v198[0].version, "2.0.0");
     }
