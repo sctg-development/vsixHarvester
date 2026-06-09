@@ -1,6 +1,5 @@
 {
   "universal": [
-    "GitHub.copilot",
     "GitHub.copilot-chat"
   ],
   "linux_x64":[
