@@ -172,6 +172,7 @@ fn test_download_extensions() {
             engine_version: None,
             retry: 0,
             allow_pre_release: false,
+            upgrade: false,
         };
 
         process_extensions(&args).await
@@ -256,6 +257,7 @@ fn test_download_extensions_for_specific_engine() {
             engine_version: Some(String::from("1.97.0")),
             retry: 0,
             allow_pre_release: false,
+            upgrade: false,
         };
 
         process_extensions(&args).await

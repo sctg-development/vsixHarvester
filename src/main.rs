@@ -7,14 +7,15 @@ mod marketplace;
 #[cfg(test)]
 mod tests;
 mod types;
+mod upgrade;
 
 use architecture::Architecture;
 use args::{Args, Parser};
 use config::MAX_CONCURRENT_DOWNLOADS;
-
 use error::{Result, VsixHarvesterError};
 use futures::stream::{self, StreamExt};
 use marketplace::download_extension;
+use upgrade::upgrade;
 
 use env_logger;
 use log::{error, info};
@@ -188,6 +189,18 @@ async fn download_extensions_from_json(args: &Args) -> Result<()> {
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
+
+    // Handle upgrade flag early
+    if args.upgrade {
+        if args.verbose {
+            if std::env::var("RUST_LOG").is_err() {
+                std::env::set_var("RUST_LOG", "info");
+            }
+        }
+        env_logger::init();
+        return upgrade(args.proxy.as_deref(), args.retry).await;
+    }
+
     if args.verbose {
         // set log level to info if verbose flag is set and RUST_LOG is not already set
         if std::env::var("RUST_LOG").is_err() {

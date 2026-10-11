@@ -21,5 +21,8 @@ pub enum VsixHarvesterError {
 
     #[error("Failed to download extension: {0}")]
     DownloadError(String),
+
+    #[error("Upgrade failed: {0}")]
+    UpgradeError(String),
 }
 pub type Result<T> = std::result::Result<T, VsixHarvesterError>;

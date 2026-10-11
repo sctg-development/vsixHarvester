@@ -54,4 +54,8 @@ pub struct Args {
     /// Number of retries for failed API calls (default: 0, meaning no retries)
     #[arg(long, default_value = "0", env = "RETRY")]
     pub retry: u32,
+
+    /// Upgrade vsixHarvester to the latest version from GitHub
+    #[arg(long, default_value = "false", env = "UPGRADE")]
+    pub upgrade: bool,
 }

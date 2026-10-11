@@ -17,6 +17,7 @@ The custom extensions.json is designed for use in our [hcf-coder](https://github
 - Direct download of a single extension without using extensions.json file.
 - Parrallel download of extensions.
 - Get latest version for a specific engine
+- Upgrade vsixHarvester to the latest version from GitHub
 
 ### Binaries
 
@@ -57,6 +58,7 @@ vsixHarvester [OPTIONS]
 - `-h`, `--help`: Print help information.
 - `--allow-pre-release`: Allow downloading pre-release versions of extensions (default to false).
 - `--retry <RETRY>`: Number of retries for failed API calls (default: 0, meaning no retries). With `--retry=2`, it will make up to 3 attempts total.
+- `--upgrade`: Upgrade vsixHarvester to the latest version from GitHub. Replaces the current binary.
 
 #### Environment Variables
 
@@ -72,6 +74,7 @@ Alternatively, you can set the following environment variables:
 - SERIAL_DOWNLOAD (default: false)
 - NO_CACHE (default: false)
 - RETRY (default: 0) - number of retries for failed API calls
+- UPGRADE (default: false) - upgrade vsixHarvester to the latest version from GitHub
   
 #### Logging
 
@@ -97,6 +100,18 @@ Direct download with specific architecture:
 
 ```sh
 vsixHarvester -D ms-python.python -a linux_x64 -d ./extensions
+```
+
+Upgrade vsixHarvester to the latest version:
+
+```sh
+vsixHarvester --upgrade
+```
+
+Upgrade with proxy:
+
+```sh
+vsixHarvester --upgrade --proxy http://proxy.example.com:8080
 ```
 
 ##### Architecture options
