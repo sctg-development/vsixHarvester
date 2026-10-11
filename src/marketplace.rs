@@ -4,10 +4,10 @@ use crate::error::VsixHarvesterError;
 use crate::extension::Extension;
 use crate::types::MarketplaceResponse;
 use log::{debug, error, info};
-use serde::de;
 use serde_json::json;
 use std::fs;
 use std::path::Path;
+use std::time::Duration;
 
 use bitflags::bitflags;
 
@@ -94,6 +94,8 @@ impl Flags {
 /// * `verbose` - Whether to print verbose output
 /// * `os_arch` - Optional target platform
 /// * `engine_version` - Optional, the engine to be compatible with
+/// * `allow_pre_release` - Whether to allow pre-release versions
+/// * `retry_count` - Number of retries for failed API calls
 ///
 /// # Returns
 ///
@@ -106,12 +108,13 @@ pub async fn download_extension(
     os_arch: Option<&str>,
     engine_version: Option<&str>,
     allow_pre_release: bool,
+    retry_count: u32,
 ) -> Result<()> {
     info!("Progress in extension: {}", extension.to_id());
 
-    // Get latest version
+    // Get latest version with retry
     let version =
-        get_extension_version(extension.clone(), proxy, engine_version, allow_pre_release).await?;
+        get_extension_version(extension.clone(), proxy, engine_version, allow_pre_release, retry_count).await?;
     info!("Latest version of {}: {}", extension.to_id(), version);
 
     let (download_url, file_path) =
@@ -140,13 +143,9 @@ pub async fn download_extension(
         client_builder.gzip(true).build()?
     };
 
-    // Download VSIX file
+    // Download VSIX file with retry
     info!("Download form {}", download_url);
-    let resp = client
-        .get(&download_url)
-        .header(reqwest::header::ACCEPT_ENCODING, "gzip")
-        .send()
-        .await?;
+    let resp = download_with_retry(&client, &download_url, retry_count).await?;
     if !resp.status().is_success() {
         error!("Fail download of {}", extension.to_id());
         return Err(VsixHarvesterError::DownloadError(extension.to_id()));
@@ -169,6 +168,7 @@ pub async fn download_extension(
 /// * `proxy` - Optional proxy URL
 /// * `engine_version` - Optional engine version to filter by compatibility
 /// * `verbose` - Whether to print verbose output
+/// * `retry_count` - Number of retries for failed API calls
 ///
 /// # Returns
 ///
@@ -178,6 +178,7 @@ pub async fn get_extension_version(
     proxy: Option<&str>,
     engine_version: Option<&str>,
     allow_pre_release: bool,
+    retry_count: u32,
 ) -> std::result::Result<String, VsixHarvesterError> {
     let api_url = API_URL;
 
@@ -206,22 +207,12 @@ pub async fn get_extension_version(
         client_builder.build()?
     };
 
-    // Send POST request
+    // Send POST request with retry
     debug!(
         "Sending query for Marketplace API: {}.{}",
         extension.publisher, extension.name
     );
-    let resp = client
-        .post(api_url)
-        .header("Content-Type", "application/json")
-        .header(
-            "Accept",
-            format!("application/json;api-version={}", MARKETPLACE_API_VERSION),
-        )
-        .header("User-Agent", USER_AGENT)
-        .json(&payload)
-        .send()
-        .await?;
+    let resp = send_request_with_retry(&client, api_url, &payload, retry_count).await?;
     if !resp.status().is_success() {
         error!("Failed query for Marketplace API");
         return Err(VsixHarvesterError::ApiError(
@@ -335,4 +326,128 @@ pub fn build_download_url_and_file_path(
     }
 
     (download_url, file_path)
+}
+
+/// Send a request with retry logic
+///
+/// # Arguments
+///
+/// * `client` - The HTTP client
+/// * `url` - The URL to send the request to
+/// * `payload` - The JSON payload to send
+/// * `retry_count` - Number of retries (0 means no retries, 1 means 1 retry = 2 attempts total)
+///
+/// # Returns
+///
+/// A Result containing the response or an error
+async fn send_request_with_retry(
+    client: &reqwest::Client,
+    url: &str,
+    payload: &serde_json::Value,
+    retry_count: u32,
+) -> Result<reqwest::Response> {
+    let mut attempts = 0;
+    let max_attempts = retry_count + 1;
+
+    loop {
+        attempts += 1;
+        let resp = client
+            .post(url)
+            .header("Content-Type", "application/json")
+            .header(
+                "Accept",
+                format!("application/json;api-version={}", MARKETPLACE_API_VERSION),
+            )
+            .header("User-Agent", USER_AGENT)
+            .json(payload)
+            .send()
+            .await;
+
+        match resp {
+            Ok(response) => {
+                if response.status().is_success() {
+                    return Ok(response);
+                }
+                // If not successful and we have retries left, continue
+                if attempts < max_attempts {
+                    info!(
+                        "API request failed, retrying (attempt {}/{})",
+                        attempts, max_attempts
+                    );
+                    tokio::time::sleep(Duration::from_secs(2u64.pow(attempts))).await;
+                    continue;
+                }
+                return Ok(response);
+            }
+            Err(e) => {
+                if attempts < max_attempts {
+                    info!(
+                        "API request error: {}, retrying (attempt {}/{})",
+                        e, attempts, max_attempts
+                    );
+                    tokio::time::sleep(Duration::from_secs(2u64.pow(attempts))).await;
+                    continue;
+                }
+                return Err(e.into());
+            }
+        }
+    }
+}
+
+/// Download with retry logic
+///
+/// # Arguments
+///
+/// * `client` - The HTTP client
+/// * `url` - The URL to download from
+/// * `retry_count` - Number of retries (0 means no retries, 1 means 1 retry = 2 attempts total)
+///
+/// # Returns
+///
+/// A Result containing the response or an error
+async fn download_with_retry(
+    client: &reqwest::Client,
+    url: &str,
+    retry_count: u32,
+) -> Result<reqwest::Response> {
+    let mut attempts = 0;
+    let max_attempts = retry_count + 1;
+
+    loop {
+        attempts += 1;
+        let resp = client
+            .get(url)
+            .header(reqwest::header::ACCEPT_ENCODING, "gzip")
+            .send()
+            .await;
+
+        match resp {
+            Ok(response) => {
+                if response.status().is_success() {
+                    return Ok(response);
+                }
+                // If not successful and we have retries left, continue
+                if attempts < max_attempts {
+                    info!(
+                        "Download failed, retrying (attempt {}/{})",
+                        attempts, max_attempts
+                    );
+                    tokio::time::sleep(Duration::from_secs(2u64.pow(attempts))).await;
+                    continue;
+                }
+                return Ok(response);
+            }
+            Err(e) => {
+                if attempts < max_attempts {
+                    info!(
+                        "Download error: {}, retrying (attempt {}/{})",
+                        e, attempts, max_attempts
+                    );
+                    tokio::time::sleep(Duration::from_secs(2u64.pow(attempts))).await;
+                    continue;
+                }
+                return Err(e.into());
+            }
+        }
+    }
 }

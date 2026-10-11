@@ -50,4 +50,8 @@ pub struct Args {
     /// Allow or not downloading extensions marked as "pre-release"
     #[arg(long, default_value = "false", env = "ALLOW_PRE_RELEASE")]
     pub allow_pre_release: bool,
+
+    /// Number of retries for failed API calls (default: 0, meaning no retries)
+    #[arg(long, default_value = "0", env = "RETRY")]
+    pub retry: u32,
 }

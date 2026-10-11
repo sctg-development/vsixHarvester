@@ -98,6 +98,7 @@ async fn download_single_extension(extension: Extension<'_>, args: &Args) -> Res
         target_platform,
         args.engine_version.as_deref(),
         args.allow_pre_release,
+        args.retry,
     )
     .await
     {
@@ -156,15 +157,16 @@ async fn download_extensions_from_json(args: &Args) -> Result<()> {
             for str_extension in platform_extensions {
                 let extension = Extension::from_id(str_extension)?;
                 info!("Attempting to download extension: {}", extension.to_id());
-                let task = download_extension(
-                    extension.clone(),
-                    &args.destination,
-                    args.no_cache,
-                    args.proxy.as_deref(),
-                    target_platform,
-                    args.engine_version.as_deref(),
-                    args.allow_pre_release,
-                );
+            let task = download_extension(
+                extension.clone(),
+                &args.destination,
+                args.no_cache,
+                args.proxy.as_deref(),
+                target_platform,
+                args.engine_version.as_deref(),
+                args.allow_pre_release,
+                args.retry,
+            );
                 tasks.push(task);
             }
             let concurrent_downloads = if args.serial {

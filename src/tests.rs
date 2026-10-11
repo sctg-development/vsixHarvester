@@ -49,7 +49,7 @@ fn test_get_extension_version() {
     };
     let version = tokio::runtime::Runtime::new()
         .unwrap()
-        .block_on(get_extension_version(ext, None, None))
+        .block_on(get_extension_version(ext, None, None, false, 0))
         .unwrap();
     assert!(!version.is_empty());
 }
@@ -93,6 +93,8 @@ fn test_download_extension_without_arch() {
             None,
             None,
             None,
+            false,
+            0,
         ));
     assert!(result.is_ok());
 }
@@ -115,6 +117,8 @@ fn test_download_extension_with_arch() {
             None,
             Some("linux-x64"),
             None,
+            false,
+            0,
         ));
     assert!(result.is_ok());
     // Check that the extension has been downloaded by looking for files with specific patterns
@@ -166,6 +170,8 @@ fn test_download_extensions() {
             arch: None,
             serial: true,
             engine_version: None,
+            retry: 0,
+            allow_pre_release: false,
         };
 
         process_extensions(&args).await
@@ -248,6 +254,8 @@ fn test_download_extensions_for_specific_engine() {
             arch: None,
             serial: true,
             engine_version: Some(String::from("1.97.0")),
+            retry: 0,
+            allow_pre_release: false,
         };
 
         process_extensions(&args).await

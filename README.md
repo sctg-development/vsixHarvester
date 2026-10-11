@@ -20,12 +20,12 @@ The custom extensions.json is designed for use in our [hcf-coder](https://github
 
 ### Binaries
 
-- [Windows](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.7/vsixHarvester_windows_amd64_0.2.7.exe)
-- [macOS AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.7/vsixHarvester_macos_amd64_0.2.7)
-- [macOS ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.7/vsixHarvester_macos_arm64_0.2.7)
-- [Linux static AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.7/vsixHarvester_linux_amd64_static_0.2.7)
-- [Linux static ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.7/vsixHarvester_linux_arm64_static_0.2.7)
-- [Linux static ARM32](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.7/vsixHarvester_linux_armhf_static_0.2.7)
+- [Windows](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.9/vsixHarvester_windows_amd64_0.2.9.exe)
+- [macOS AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.9/vsixHarvester_macos_amd64_0.2.9)
+- [macOS ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.9/vsixHarvester_macos_arm64_0.2.9)
+- [Linux static AMD64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.9/vsixHarvester_linux_amd64_static_0.2.9)
+- [Linux static ARM64](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.9/vsixHarvester_linux_amd64_static_0.2.9)
+- [Linux static ARM32](https://github.com/sctg-development/vsixHarvester/releases/download/0.2.9/vsixHarvester_linux_armhf_static_0.2.9)
   
 ### Prerequisites
 
@@ -56,6 +56,7 @@ vsixHarvester [OPTIONS]
 - `-v`, `--verbose`: Enable verbose output for detailed logging.
 - `-h`, `--help`: Print help information.
 - `--allow-pre-release`: Allow downloading pre-release versions of extensions (default to false).
+- `--retry <RETRY>`: Number of retries for failed API calls (default: 0, meaning no retries). With `--retry=2`, it will make up to 3 attempts total.
 
 #### Environment Variables
 
@@ -70,6 +71,7 @@ Alternatively, you can set the following environment variables:
 - ARCH (default: none)
 - SERIAL_DOWNLOAD (default: false)
 - NO_CACHE (default: false)
+- RETRY (default: 0) - number of retries for failed API calls
   
 #### Logging
 

@@ -1,9 +1,11 @@
 {
   "universal": [
-    "GitHub.copilot-chat"
+    "GitHub.copilot"
   ],
   "linux_x64":[
+    "anthropic.claude-code"
   ],
   "linux_arm64":[
+    "anthropic.claude-code"
   ]
 }
