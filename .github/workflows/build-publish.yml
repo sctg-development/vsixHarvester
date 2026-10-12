@@ -22,7 +22,7 @@ jobs:
     with:
       dockerfile: Dockerfile
       artifact-prefix: build
-      image: sctg/vsixharvester:latest
+      image: sctg/vsixharvester
       cleanup: false
     secrets: inherit
 
