@@ -238,9 +238,22 @@ pub async fn get_extension_version(
         ));
     }
     let resp_json = resp_json_result.unwrap();
+    
+    // Check if results or extensions are empty
+    if resp_json.results.is_empty() {
+        error!("No results found for extension {}", extension.to_id());
+        return Err(VsixHarvesterError::ExtensionNotFound(extension.to_id()));
+    }
+    
+    if resp_json.results[0].extensions.is_empty() {
+        error!("No extensions found in results for {}", extension.to_id());
+        return Err(VsixHarvesterError::ExtensionNotFound(extension.to_id()));
+    }
+    
     debug!(
-        "Got {} version results",
-        resp_json.results[0].extensions[0].versions.len()
+        "Got {} version results for extension {}",
+        resp_json.results[0].extensions[0].versions.len(),
+        extension.to_id()
     );
 
     let versions = if engine_version.is_some() {
@@ -273,6 +286,10 @@ pub async fn get_extension_version(
         versions[0].version.clone()
     } else {
         debug!("Could not find compatible version, using latest");
+        if resp_json.results[0].extensions[0].versions.is_empty() {
+            error!("No versions found for extension {}", extension.to_id());
+            return Err(VsixHarvesterError::ExtensionNotFound(extension.to_id()));
+        }
         resp_json.results[0].extensions[0].versions[0]
             .version
             .clone()

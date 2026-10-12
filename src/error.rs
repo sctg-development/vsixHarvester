@@ -24,5 +24,8 @@ pub enum VsixHarvesterError {
 
     #[error("Upgrade failed: {0}")]
     UpgradeError(String),
+
+    #[error("Extension not found: {0}")]
+    ExtensionNotFound(String),
 }
 pub type Result<T> = std::result::Result<T, VsixHarvesterError>;

@@ -1,6 +1,7 @@
 use crate::marketplace::{build_download_url_and_file_path, get_extension_version};
 use crate::{
     create_directory_if_not_exists, download_extension, process_extensions, Args, Extension,
+    VsixHarvesterError,
 };
 use std::fs;
 use tempfile::TempDir;
@@ -52,6 +53,18 @@ fn test_get_extension_version() {
         .block_on(get_extension_version(ext, None, None, false, 0))
         .unwrap();
     assert!(!version.is_empty());
+}
+
+#[test]
+fn test_get_extension_version_not_found() {
+    let ext = Extension {
+        publisher: "NonExistent",
+        name: "NonExistentExtension",
+    };
+    let result = tokio::runtime::Runtime::new()
+        .unwrap()
+        .block_on(get_extension_version(ext, None, None, false, 0));
+    assert!(matches!(result, Err(VsixHarvesterError::ExtensionNotFound(_))));
 }
 
 #[test]
