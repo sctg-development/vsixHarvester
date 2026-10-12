@@ -33,8 +33,8 @@ pub struct Extension {
     pub published_date: String,
     #[serde(rename = "releaseDate")]
     pub release_date: String,
-    #[serde(rename = "shortDescription")]
-    pub short_description: String,
+    #[serde(rename = "shortDescription", default)]
+    pub short_description: Option<String>,
     pub versions: Vec<Version>,
     #[serde(rename = "deploymentType")]
     pub deployment_type: i32,
@@ -370,6 +370,82 @@ mod tests {
         assert!(vsix_url.contains("Microsoft.VisualStudio.Services.VSIXPackage"));
     }
 
+    #[test]
+    fn test_parse_marketplace_response_missing_short_description() {
+        let json = r#"{
+            "results": [
+                {
+                    "extensions": [
+                        {
+                            "publisher": {
+                                "publisherId": "7c1c19cd-78eb-4dfb-8999-99caf7679002",
+                                "publisherName": "GitHub",
+                                "displayName": "GitHub",
+                                "flags": "verified",
+                                "domain": "https://github.com",
+                                "isDomainVerified": true
+                            },
+                            "extensionId": "23c4aeee-f844-43cd-b53e-1113e483f1a6",
+                            "extensionName": "copilot",
+                            "displayName": "GitHub Copilot",
+                            "flags": "validated, public, trial",
+                            "lastUpdated": "2025-03-09T04:19:46.193Z",
+                            "publishedDate": "2021-06-29T14:26:17.88Z",
+                            "releaseDate": "2021-06-29T14:26:17.88Z",
+                            "versions": [
+                                {
+                                    "version": "1.280.1421",
+                                    "flags": "validated",
+                                    "lastUpdated": "2025-03-09T04:19:46.193Z",
+                                    "files": [
+                                        {
+                                            "assetType": "Microsoft.VisualStudio.Services.VSIXPackage",
+                                            "source": "https://GitHub.gallerycdn.vsassets.io/extensions/github/copilot/1.280.1421/1741493793091/Microsoft.VisualStudio.Services.VSIXPackage"
+                                        }
+                                    ],
+                                    "properties": [
+                                        {
+                                            "key": "Microsoft.VisualStudio.Code.Engine",
+                                            "value": "^1.98.0"
+                                        }
+                                    ],
+                                    "assetUri": "https://GitHub.gallerycdn.vsassets.io/extensions/github/copilot/1.280.1421/1741493793091",
+                                    "fallbackAssetUri": "https://GitHub.gallery.vsassets.io/_apis/public/gallery/publisher/GitHub/extension/copilot/1.280.1421/assetbyname"
+                                }
+                            ],
+                            "deploymentType": 0
+                        }
+                    ],
+                    "pagingToken": null,
+                    "resultMetadata": [
+                        {
+                            "metadataType": "ResultCount",
+                            "metadataItems": [
+                                {
+                                    "name": "TotalCount",
+                                    "count": 1
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }"#;
+
+        let response = parse_marketplace_response(json);
+        assert!(response.is_ok());
+
+        let response = response.unwrap();
+        assert_eq!(response.results.len(), 1);
+        assert_eq!(response.results[0].extensions.len(), 1);
+
+        let extension = &response.results[0].extensions[0];
+        assert_eq!(extension.extension_name, "copilot");
+        assert_eq!(extension.publisher.publisher_name, "GitHub");
+        assert_eq!(extension.get_identifier(), "GitHub.copilot");
+        assert!(extension.short_description.is_none());
+    }
+
     #[cfg(test)]
     #[test]
     fn test_get_compatible_versions() {
@@ -390,7 +466,7 @@ mod tests {
             last_updated: "".to_string(),
             published_date: "".to_string(),
             release_date: "".to_string(),
-            short_description: "".to_string(),
+            short_description: Some("".to_string()),
             versions: vec![],
             deployment_type: 0,
         };
