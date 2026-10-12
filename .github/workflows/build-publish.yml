@@ -1,0 +1,74 @@
+# prebuild (toolchains, rarely changes) then final image (code-server + extensions).
+# Both are built natively per architecture (amd64: ubuntu-26.04, arm64: ubuntu-26.04-arm)
+# and merged into one manifest. The final build waits for the prebuild: the two used to run
+# at the same time on a release, so the final image could be built on the previous prebuild.
+name: Build and publish amd64/arm64 to Docker Hub
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+
+concurrency:
+  group: build-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # run when the prebuild succeeded or was skipped, never when it failed
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/_build-image.yml
+    with:
+      dockerfile: Dockerfile
+      artifact-prefix: build
+      image: sctg/vsixharvester:latest
+    secrets: inherit
+
+  extract-and-upload:
+    name: Extract binaries and upload to release
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ !cancelled() && github.event_name == 'release' }}
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Pull and extract files from Docker image (amd64)
+        continue-on-error: true
+        run: |
+          export TAG=${{ github.event.release.tag_name }}
+          mkdir -p /tmp/amd64/
+          docker pull sctg/vsixharvester:latest
+          docker create --platform linux/amd64 --name temp-container-amd64 sctg/vsixharvester:latest
+          docker cp temp-container-amd64:/usr/local/bin/vsixHarvester /tmp/amd64/
+          docker rm temp-container-amd64
+          cd /tmp/amd64/
+          mv vsixHarvester /tmp/amd64/vsixHarvester_linux_amd64_static_${{ github.event.release.tag_name }}
+
+      - name: Pull and extract files from Docker image (arm64)
+        continue-on-error: true
+        run: |
+          export TAG=${{ github.event.release.tag_name }}
+          mkdir -p /tmp/arm64/
+          docker pull sctg/vsixharvester:latest
+          docker create --platform linux/arm64 --name temp-container-arm64 sctg/vsixharvester:latest
+          docker cp temp-container-arm64:/usr/local/bin/vsixHarvester /tmp/arm64/
+          docker rm temp-container-arm64
+          cd /tmp/arm64/
+          mv vsixHarvester /tmp/arm64/vsixHarvester_linux_arm64_static_${{ github.event.release.tag_name }}
+
+      - name: Upload Release
+        continue-on-error: true
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+            ls -lR
+            gh release upload ${{ github.event.release.tag_name }} /tmp/amd64/vsixHarvester_linux_amd64_static_${{ github.event.release.tag_name }} --clobber
+            gh release upload ${{ github.event.release.tag_name }} /tmp/arm64/vsixHarvester_linux_arm64_static_${{ github.event.release.tag_name }} --clobber
+
+      - name: Attest release
+        uses: actions/attest-build-provenance@v1
+        continue-on-error: true
+        with:
+          subject-path: '/tmp/amd64/vsixHarvester_linux_amd64_static_${{ github.event.release.tag_name }},/tmp/arm64/vsixHarvester_linux_arm64_static_${{ github.event.release.tag_name }}'
