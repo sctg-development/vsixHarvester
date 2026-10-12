@@ -17,6 +17,10 @@ on:
         description: Unique prefix for the digest artifacts of this image
         type: string
         required: true
+      cleanup:
+        description: Whether to clean up the runner's disk space before building
+        type: boolean
+        default: true
     secrets:
       DOCKER_USERNAME:
         required: true
@@ -44,6 +48,7 @@ jobs:
             runner: ubuntu-26.04-arm
     steps:
       - name: Optimize disk space
+        if: ${{ inputs.cleanup }}
         uses: sctg-development/clean-image-for-docker@v2
 
       - name: Check out the repo
